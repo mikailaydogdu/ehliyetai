@@ -1,0 +1,1022 @@
+[
+  {
+    "id": 101,
+    "kategori": "Araç Tekniği",
+    "soru": "Vites kutusundan gelen hareketi diferansiyele ileten aktarma organı hangisidir?",
+    "secenekler": {
+      "A": "Şaft (Kardan Mili)",
+      "B": "Aks",
+      "C": "Volan",
+      "D": "Kavrama"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 102,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Karayollarında geceleyin seyir halindeyken, önünüzdeki araç yakından takip ediliyorsa hangi ışıkların yakılması zorunludur?",
+    "secenekler": {
+      "A": "Uzak farlar",
+      "B": "Park ışıkları",
+      "C": "Yakın farlar",
+      "D": "Acil uyarı ışıkları"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 103,
+    "kategori": "İlkyardım",
+    "soru": "Kazazedenin burnundan ve kulağından kan geliyorsa, beraberinde sıvı da sızıyorsa hangi bölge yaralanması akla gelir?",
+    "secenekler": {
+      "A": "Göğüs yaralanması",
+      "B": "Baş ve omurga yaralanması",
+      "C": "Karın yaralanması",
+      "D": "Bacak kırılması"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 104,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Arızalı bir aracı çeken araç arasındaki bağlantının uzunluğu kaç metreyi geçerse üzerine kırmızı yansıtıcı veya bez asılmalıdır?",
+    "secenekler": {
+      "A": "1 metre",
+      "B": "2.5 metre",
+      "C": "5 metre",
+      "D": "10 metre"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 105,
+    "kategori": "Araç Tekniği",
+    "soru": "Frenleme sırasında aracın bir tarafa çekmesinin sebebi aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Lastiklerin birinin havasının diğerinden az olması",
+      "B": "Yakıtın bitmek üzere olması",
+      "C": "Motorun hararet yapması",
+      "D": "Balataların yeni olması"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 106,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Üzerinde renkli ışıklı cihaz veya siren bulunan araçlara ne ad verilir?",
+    "secenekler": {
+      "A": "Ticari araç",
+      "B": "Geçiş üstünlüğüne sahip araç",
+      "C": "Özel amaçlı araç",
+      "D": "Toplu taşıma aracı"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 107,
+    "kategori": "İlkyardım",
+    "soru": "Hangi tür yaralanmalarda kazazede oturtularak hastaneye sevk edilebilir?",
+    "secenekler": {
+      "A": "Omurga kırığı olanlar",
+      "B": "Kafatası kırığı olanlar",
+      "C": "Kol kemiği kırığı olanlar",
+      "D": "Kalça kemiği kırığı olanlar"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 108,
+    "kategori": "Araç Tekniği",
+    "soru": "Aracın geri vites lambaları hangi renktir?",
+    "secenekler": {
+      "A": "Kırmızı",
+      "B": "Sarı",
+      "C": "Beyaz",
+      "D": "Mavi"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 109,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Tehlikeli eğimli yollarda aşağıdakilerden hangisinin yapılması yasaktır?",
+    "secenekler": {
+      "A": "Vitesin boşa alınması veya kontağın kapatılması",
+      "B": "Düşük vitesle inilmesi",
+      "C": "Hızın azaltılması",
+      "D": "Frene basılması"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 110,
+    "kategori": "Araç Tekniği",
+    "soru": "Süspansiyon sisteminde bulunan ve yayların salınımını kontrol eden parça hangisidir?",
+    "secenekler": {
+      "A": "Amortisör",
+      "B": "Makas",
+      "C": "Rotil",
+      "D": "Diferansiyel"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 111,
+    "kategori": "İlkyardım",
+    "soru": "Bacaklardaki büyük kanamalarda hangi bölgeye baskı uygulanır?",
+    "secenekler": {
+      "A": "Koltuk altı",
+      "B": "Kasık iç kısmı",
+      "C": "Köprücük kemiği üzeri",
+      "D": "Boyun bölgesi"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 112,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Yerleşim yeri dışında, aksine bir işaret yoksa otomobiller için otoyollarda azami hız sınırı saatte kaç kilometredir?",
+    "secenekler": {
+      "A": "110",
+      "B": "120",
+      "C": "130",
+      "D": "140"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 113,
+    "kategori": "Araç Tekniği",
+    "soru": "Aracın el freni hangi tekerleklere etki eder?",
+    "secenekler": {
+      "A": "Ön tekerleklere",
+      "B": "Arka tekerleklere",
+      "C": "Dört tekerleğe birden",
+      "D": "Sadece sağ tekerleklere"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 114,
+    "kategori": "Trafik Adabı",
+    "soru": "Kendi canını tehlikeye atarak bir başkasının hayatını kurtarmaya çalışmak trafikte hangi değerle ifade edilir?",
+    "secenekler": {
+      "A": "Bencillik",
+      "B": "Diğergamlık",
+      "C": "Sorumsuzluk",
+      "D": "Nezaketsizlik"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 115,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Hangi trafik işareti 'Yol Ver' anlamındadır?",
+    "secenekler": {
+      "A": "Eşkenar üçgen (Ucu aşağı bakan)",
+      "B": "Sekizgen",
+      "C": "Yuvarlak",
+      "D": "Kare"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 131,
+    "kategori": "Araç Tekniği",
+    "soru": "Motor yağının kontrolü yapılırken yağ seviyesi yağ çubuğunun neresinde olmalıdır?",
+    "secenekler": {
+      "A": "İki çizgi arasında",
+      "B": "Alt çizginin altında",
+      "C": "Üst çizginin üzerinde",
+      "D": "Yağ çubuğunun en ucunda"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 132,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Sürücü belgesi geri alınan bir kişi, aşağıdakilerden hangisi tamamlanmadan belgesini geri alamaz?",
+    "secenekler": {
+      "A": "Sürücü kursuna tekrar gitmeden",
+      "B": "Yasal süre dolmadan ve gerekli şartlar (ceza, muayene vb.) karşılanmadan",
+      "C": "Yeni bir araç almadan",
+      "D": "Noter onayı almadan"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 133,
+    "kategori": "İlkyardım",
+    "soru": "Göğüsteki delici yaralanmalarda, yaralıya hangi pozisyon verilir?",
+    "secenekler": {
+      "A": "Sırt üstü yatış",
+      "B": "Yarı oturuş pozisyonu",
+      "C": "Yan yatış",
+      "D": "Ayaklar yukarıda olacak şekilde yatış"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 134,
+    "kategori": "Trafik Adabı",
+    "soru": "Trafikte hangi temel değere sahip olan sürücü, hata yaptığında diğer sürücülerden özür dilemesini bilir?",
+    "secenekler": {
+      "A": "Bencillik",
+      "B": "Nezaket ve Saygı",
+      "C": "İnatlaşma",
+      "D": "Tahammülsüzlük"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 135,
+    "kategori": "Araç Tekniği",
+    "soru": "Fren pedalına basıldığında fren lambaları yanmıyorsa sebebi aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Fren hidroliği fazladır",
+      "B": "Fren müşürü arızalıdır",
+      "C": "Geri vites müşürü arızalıdır",
+      "D": "Distribütör arızalıdır"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 136,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Demiryolu (Hemzemin) geçitlerinde aşağıdakilerden hangisinin yapılması yasaktır?",
+    "secenekler": {
+      "A": "Hızın azaltılması",
+      "B": "Öndeki aracın geçilmesi",
+      "C": "Bariyer kapalıysa durulması",
+      "D": "Işıklı işaretlere uyulması"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 137,
+    "kategori": "İlkyardım",
+    "soru": "Hangi durumdaki yaralıya 'Turnike' uygulanması zorunludur?",
+    "secenekler": {
+      "A": "Çok sayıda yaralının olduğu ortamda tek ilkyardımcı varsa ve uzuv kopması mevcutsa",
+      "B": "Sıyrık şeklindeki kanamalarda",
+      "C": "Toplardamar kanamalarında",
+      "D": "Kısa süreli burun kanamalarında"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 138,
+    "kategori": "Araç Tekniği",
+    "soru": "Vantilatör kayışı çok gevşek ise aşağıdakilerden hangisi meydana gelir?",
+    "secenekler": {
+      "A": "Motor yağ yakar",
+      "B": "Şarj sistemi düzgün çalışmaz ve motor hararet yapar",
+      "C": "Frenler tutmaz",
+      "D": "Vites geçişleri zorlaşır"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 139,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Gidişe ayrılan en soldaki şeridin sürekli işgal edilmesi neden yasaktır?",
+    "secenekler": {
+      "A": "Hızlı giden araçların geçişini engellememek için",
+      "B": "Yakıt tasarrufu sağlamak için",
+      "C": "Lastiklerin aşınmasını önlemek için",
+      "D": "Yolun bakımını yapmak için"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 140,
+    "kategori": "İlkyardım",
+    "soru": "Donmaya maruz kalan hastaya ilk yardım olarak aşağıdakilerden hangisi yapılır?",
+    "secenekler": {
+      "A": "Hemen sıcak suya sokulur",
+      "B": "Donan bölge ovularak ısıtılır",
+      "C": "Önce ılık, sonra kademeli olarak sıcak ortama alınır",
+      "D": "Alkol içirilir"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 141,
+    "kategori": "Araç Tekniği",
+    "soru": "Dizel motorlarda yakıt filtresi neden düzenli değiştirilmelidir?",
+    "secenekler": {
+      "A": "Motorun daha gürültülü çalışması için",
+      "B": "Yakıt sistemine giren su ve pislikleri süzmek için",
+      "C": "Hız sınırını artırmak için",
+      "D": "Yağ seviyesini korumak için"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 142,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Taşıt yolu üzerine çizilen yavaşlama uyarı çizgileri (giderek sıklaşan çizgiler) nereye yaklaşıldığını bildirir?",
+    "secenekler": {
+      "A": "Yaya geçidine veya kavşağa",
+      "B": "Okul bölgesine",
+      "C": "Havaalanına",
+      "D": "Şehir merkezine"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 143,
+    "kategori": "İlkyardım",
+    "soru": "Hangi tür kanamalarda kan, açık kırmızı renkte ve fışkırır tarzda akar?",
+    "secenekler": {
+      "A": "Toplardamar kanaması",
+      "B": "Atardamar kanaması",
+      "C": "Kılcal damar kanaması",
+      "D": "Burun kanaması"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 144,
+    "kategori": "Araç Tekniği",
+    "soru": "Lastik değiştirilirken aracın krikoyla kaldırılması sırasında neye dikkat edilmelidir?",
+    "secenekler": {
+      "A": "Vitesin boşa alınmasına",
+      "B": "Aracın hareket etmemesi için gerekli güvenlik önlemlerinin alınmasına (takoz vb.)",
+      "C": "Camların açılmasına",
+      "D": "Kornaya basılmasına"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 145,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Üzerinde teknik değişiklik yapılıp da süresi içinde bildirilmeyen araçlara ne uygulanır?",
+    "secenekler": {
+      "A": "Araç trafikten men edilir",
+      "B": "Sürücü hapis cezası alır",
+      "C": "Araç hurdaya ayrılır",
+      "D": "Sadece uyarı verilir"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 146,
+    "kategori": "İlkyardım",
+    "soru": "Şok pozisyonunda hastanın ayakları kaç cm yukarı kaldırılır?",
+    "secenekler": {
+      "A": "15",
+      "B": "30",
+      "C": "50",
+      "D": "60"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 147,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorun soğutma suyu sıcaklığını gösteren paneldeki ibre hangisidir?",
+    "secenekler": {
+      "A": "Kilometre saati",
+      "B": "Hararet göstergesi",
+      "C": "Devir saati",
+      "D": "Yakıt göstergesi"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 148,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Konvoy halindeki araçların arasındaki mesafe ne kadar olmalıdır?",
+    "secenekler": {
+      "A": "En az 10 metre",
+      "B": "En az bir araç boyu",
+      "C": "Kendilerini geçmek isteyen araçların güvenle girebileceği kadar",
+      "D": "50 metre"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 149,
+    "kategori": "İlkyardım",
+    "soru": "Göğüs kemiği üzerine uygulanan kalp masajında, göğüs kafesi yetişkinlerde kaç cm aşağı çöktürülür?",
+    "secenekler": {
+      "A": "2",
+      "B": "5",
+      "C": "7",
+      "D": "10"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 150,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Uyuşturucu veya uyarıcı madde aldığı tespit edilen sürücüler hakkında hangi işlem yapılır?",
+    "secenekler": {
+      "A": "Sadece para cezası verilir",
+      "B": "Sürücü belgesi 5 yıl süreyle geri alınır ve idari para cezası uygulanır",
+      "C": "Bir hafta araç kullanmama cezası verilir",
+      "D": "Sadece araç trafikten men edilir"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 151,
+    "kategori": "Araç Tekniği",
+    "soru": "Motoru çalıştırırken marş süresi en fazla kaç saniye olmalıdır?",
+    "secenekler": {
+      "A": "5-10 saniye",
+      "B": "10-15 saniye",
+      "C": "20-30 saniye",
+      "D": "1 dakika"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 152,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Görüş yetersizliği olan dönemeçlerde veya tepe üstlerinde aşağıdakilerden hangisinin yapılması yasaktır?",
+    "secenekler": {
+      "A": "Hızın azaltılması",
+      "B": "Öndeki aracın geçilmesi",
+      "C": "Takip mesafesinin artırılması",
+      "D": "Yolun sağından gidilmesi"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 153,
+    "kategori": "İlkyardım",
+    "soru": "Hangi tür yaralanmalarda 'pamuk' yaraya doğrudan sürülmemelidir?",
+    "secenekler": {
+      "A": "Kapalı yaralarda",
+      "B": "Açık ve kanamalı yaralarda",
+      "C": "Sadece morarmalarda",
+      "D": "Burkulmalarda"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 154,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Otomobillerin 2 yaş sonunda kaç yılda bir muayene ettirilmesi zorunludur?",
+    "secenekler": {
+      "A": "Her yıl",
+      "B": "2 yılda bir",
+      "C": "3 yılda bir",
+      "D": "5 yılda bir"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 155,
+    "kategori": "Araç Tekniği",
+    "soru": "Sürüş sırasında el freninin çekili unutulması aşağıdakilerden hangisine neden olur?",
+    "secenekler": {
+      "A": "Motorun daha hızlı soğumasına",
+      "B": "Kampanaların ısınmasına ve frenlerin tutmamasına",
+      "C": "Yakıt tasarrufuna",
+      "D": "Şanzıman yağının artmasına"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 156,
+    "kategori": "İlkyardım",
+    "soru": "Bak-Dinle-Hisset yöntemiyle solunum kaç saniye süreyle kontrol edilir?",
+    "secenekler": {
+      "A": "2 saniye",
+      "B": "5 saniye",
+      "C": "10 saniye",
+      "D": "20 saniye"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 157,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Geceleri görüşün çok kısıtlı olduğu kavşaklara yaklaşırken sürücü ne yapmalıdır?",
+    "secenekler": {
+      "A": "Birkaç kez selektör yaparak gelişini haber vermeli",
+      "B": "Sürekli korna çalmalı",
+      "C": "Uzak farları yakıp beklemeli",
+      "D": "Hızını artırmalı"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 158,
+    "kategori": "Araç Tekniği",
+    "soru": "Akü başka bir aküyle takviye edilecekse kutup başları nasıl bağlanır?",
+    "secenekler": {
+      "A": "Artı (+) kutup artı (+) kutupla, eksi (-) kutup eksi (-) kutupla",
+      "B": "Artı (+) kutup eksi (-) kutupla",
+      "C": "Rastgele bağlanır",
+      "D": "Önce eksiler sonra artılar bağlanır"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 159,
+    "kategori": "İlkyardım",
+    "soru": "Aşağıdakilerden hangisi şokun belirtilerinden biridir?",
+    "secenekler": {
+      "A": "Cildin sıcak ve kuru olması",
+      "B": "Nabzın hızlı ve zayıf olması",
+      "C": "Kan basıncının yükselmesi",
+      "D": "Düzenli ve derin solunum"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 160,
+    "kategori": "Trafik Adabı",
+    "soru": "Öfke yönetimi trafikte neyi sağlar?",
+    "secenekler": {
+      "A": "Daha hızlı araç sürmeyi",
+      "B": "Kaza riskinin azalmasını ve sakin kalmayı",
+      "C": "Diğer sürücüleri korkutmayı",
+      "D": "Sürekli haklı çıkmayı"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 161,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Römork takmış bir otomobilin hız sınırı, römorksuz hız sınırına göre saatte kaç kilometre az olmalıdır?",
+    "secenekler": {
+      "A": "5 km/s",
+      "B": "10 km/s",
+      "C": "20 km/s",
+      "D": "Hız sınırı değişmez"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 162,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorun yağ yakmasının en temel sebebi nedir?",
+    "secenekler": {
+      "A": "Hava filtresinin kirli olması",
+      "B": "Silindirlerin veya segmanların aşınmış olması",
+      "C": "Lastiklerin eskimesi",
+      "D": "Antifrizin bitmesi"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 163,
+    "kategori": "İlkyardım",
+    "soru": "Omurga zedelenmesi olan bir yaralıya hangisi yapılmaz?",
+    "secenekler": {
+      "A": "Baş-boyun-gövde ekseni korunur",
+      "B": "Kendi başına yürümesine izin verilir",
+      "C": "Sert bir zemine yatırılır",
+      "D": "Tıbbi yardım istenir"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 164,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Karayolu üzerinde duraklayan bir aracın önünde ve arkasında en az kaç metre mesafeye reflektör konulmalıdır?",
+    "secenekler": {
+      "A": "10 metre",
+      "B": "20 metre",
+      "C": "30 metre",
+      "D": "50 metre"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 165,
+    "kategori": "Araç Tekniği",
+    "soru": "Kullanım ömrünü tamamlamış lastiklerin kullanılması hangisine yol açar?",
+    "secenekler": {
+      "A": "Fren mesafesinin uzamasına",
+      "B": "Yakıt tasarrufuna",
+      "C": "Sürüş konforunun artmasına",
+      "D": "Direksiyonun hafiflemesine"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 166,
+    "kategori": "İlkyardım",
+    "soru": "Göze yabancı cisim batmışsa ilkyardım olarak ne yapılır?",
+    "secenekler": {
+      "A": "Cisim hemen çıkarılır",
+      "B": "Göz ovulur",
+      "C": "Cisme dokunulmaz, her iki göz kapatılarak hastaneye sevk edilir",
+      "D": "Göz suyla yıkanır"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 167,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Sürücülerin her iki yönden kaç metre mesafe içindeki köprü ve tünellere park etmeleri yasaktır?",
+    "secenekler": {
+      "A": "5 metre",
+      "B": "10 metre",
+      "C": "15 metre",
+      "D": "20 metre"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 168,
+    "kategori": "Araç Tekniği",
+    "soru": "Motor yağ lambası yanarken yola devam edilirse hangisi meydana gelebilir?",
+    "secenekler": {
+      "A": "Yakıt artar",
+      "B": "Motor yatak sarar (ciddi hasar alır)",
+      "C": "Lastikler patlar",
+      "D": "Farlar söner"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 169,
+    "kategori": "İlkyardım",
+    "soru": "Sarımsak kokusu gibi koku yayan bir yaralıda hangi zehirlenme akla gelir?",
+    "secenekler": {
+      "A": "Alkol zehirlenmesi",
+      "B": "İlaç zehirlenmesi",
+      "C": "Tarım ilacı zehirlenmesi",
+      "D": "Besin zehirlenmesi"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 170,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Trafik kazasına karışan bir sürücü, hangi durumda kaza yerinden ayrılabilir?",
+    "secenekler": {
+      "A": "Her zaman ayrılabilir",
+      "B": "Sadece maddi hasarlı kazada diğer sürücüyle anlaşarak tutanak tutulursa",
+      "C": "Kimseden izin almadan",
+      "D": "Polis gelmeden asla"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 171,
+    "kategori": "Araç Tekniği",
+    "soru": "Bujilerin ayarsız olması veya eskimesi aşağıdakilerden hangisine neden olur?",
+    "secenekler": {
+      "A": "Motorun sarsıntılı çalışmasına ve yakıt sarfiyatının artmasına",
+      "B": "Frenlerin tutmamasına",
+      "C": "Akünün boşalmasına",
+      "D": "Lastiklerin aşınmasına"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 172,
+    "kategori": "İlkyardım",
+    "soru": "Hangi kemik kırığında 'Atel' uygulaması (tespit) genellikle yapılmaz?",
+    "secenekler": {
+      "A": "Bacak kemiği",
+      "B": "Kol kemiği",
+      "C": "Köprücük kemiği (Üçgen sargı kullanılır)",
+      "D": "Kaval kemiği"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 173,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Ticari araç sürücülerinin gün içerisinde en fazla kaç saat kesintisiz araç kullanmaları yasaldır?",
+    "secenekler": {
+      "A": "2 saat",
+      "B": "4.5 saat",
+      "C": "6 saat",
+      "D": "9 saat"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 174,
+    "kategori": "Araç Tekniği",
+    "soru": "Rodaj süresi nedir?",
+    "secenekler": {
+      "A": "Aracın hızlı gitme süresi",
+      "B": "Yeni alınan veya motoru yenilenen aracın parçalarının birbirine alışma süresi",
+      "C": "Muayene süresi",
+      "D": "Fren balata değişim süresi"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 175,
+    "kategori": "İlkyardım",
+    "soru": "Yetişkinlerde temel yaşam desteğinde kalp masajı ve suni solunum oranı nedir?",
+    "secenekler": {
+      "A": "5 masaj / 2 solunum",
+      "B": "15 masaj / 2 solunum",
+      "C": "30 masaj / 2 solunum",
+      "D": "30 masaj / 5 solunum"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 176,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Sürücülerin, trafik içindeki davranışlarının nedenlerini sorgulaması ve hatalarını fark etmesi hangi disiplinle ilgilidir?",
+    "secenekler": {
+      "A": "Trafik Psikolojisi",
+      "B": "Mekanik Bilgisi",
+      "C": "İlkyardım Bilgisi",
+      "D": "Coğrafya Bilgisi"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 177,
+    "kategori": "Araç Tekniği",
+    "soru": "Gösterge panelinde 'ABS' uyarı ışığının yanması neyi bildirir?",
+    "secenekler": {
+      "A": "Fren sisteminde bir arıza olduğunu",
+      "B": "Yakıtın bitmek üzere olduğunu",
+      "C": "Lastik hava basıncının arttığını",
+      "D": "Motorun aşırı ısındığını"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 178,
+    "kategori": "İlkyardım",
+    "soru": "Hangi tür zehirlenmelerde hasta asla kusturulmamalı, bunun yerine ağız çalkalatılmalı ve tıbbi yardım istenmelidir?",
+    "secenekler": {
+      "A": "Asit veya alkali gibi yakıcı madde zehirlenmelerinde",
+      "B": "Bayat yemek zehirlenmelerinde",
+      "C": "Alkol zehirlenmelerinde",
+      "D": "Mantar zehirlenmelerinde"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 179,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Karayolları Trafik Kanunu'na göre, puanlama sisteminde bir yıl içinde toplam kaç ceza puanına ulaşan sürücünün belgesi 2 ay süreyle geri alınır?",
+    "secenekler": {
+      "A": "50",
+      "B": "100",
+      "C": "150",
+      "D": "200"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 180,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorlu araçlarda eski ve aşınmış bujilerin kullanılması aşağıdakilerden hangisine neden olur?",
+    "secenekler": {
+      "A": "Yakıt tüketiminin artmasına",
+      "B": "Motorun daha sessiz çalışmasına",
+      "C": "Akü ömrünün uzamasına",
+      "D": "Fren mesafesinin kısalmasına"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 181,
+    "kategori": "İlkyardım",
+    "soru": "Yetişkinlerde temel yaşam desteği uygulanırken göğüs kemiğine yapılan bası hızı dakikada kaç olmalıdır?",
+    "secenekler": {
+      "A": "60",
+      "B": "80",
+      "C": "100",
+      "D": "140"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 182,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Otoyollarda duraklamak veya park etmek hakkında aşağıdakilerden hangisi doğrudur?",
+    "secenekler": {
+      "A": "Sadece emniyet şeridinde yasaktır",
+      "B": "Zorunlu haller dışında yasaktır",
+      "C": "Her zaman serbesttir",
+      "D": "Sadece geceleri yasaktır"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 183,
+    "kategori": "Araç Tekniği",
+    "soru": "Egzozdan 'mavi duman' çıkması motorun hangi durumda olduğunu gösterir?",
+    "secenekler": {
+      "A": "Motor yağ yakıyor",
+      "B": "Zengin karışımla çalışıyor",
+      "C": "Motor soğuk",
+      "D": "Yakıt bitiyor"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 184,
+    "kategori": "Trafik Adabı",
+    "soru": "Trafikte engelli bir bireyin geçişine yardımcı olan bir sürücü hangi temel değeri sergilemiş olur?",
+    "secenekler": {
+      "A": "Sorumluluk ve Diğergamlık",
+      "B": "Öfke",
+      "C": "İnatlaşma",
+      "D": "Tahammülsüzlük"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 185,
+    "kategori": "İlkyardım",
+    "soru": "Kaza yerinde araçtan çıkarılan yaralının solunumu yoksa, sevk edilmeden önce ne yapılmalıdır?",
+    "secenekler": {
+      "A": "Hemen hastaneye götürülmeli",
+      "B": "Temel yaşam desteği (kalp masajı ve suni solunum) uygulanmalı",
+      "C": "Sadece su içirilmeli",
+      "D": "Bekletilmeli"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 186,
+    "kategori": "Araç Tekniği",
+    "soru": "Motor çok sıcakken radyatöre soğuk su konulması aşağıdakilerden hangisine neden olabilir?",
+    "secenekler": {
+      "A": "Silindir kapağı veya motor bloğunun çatlamasına",
+      "B": "Lastiklerin şişmesine",
+      "C": "Akü şarjının artmasına",
+      "D": "Yağ seviyesinin yükselmesine"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 187,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Yönetmelikte belirtilen miktarın üzerinde alkol alarak araç kullandığı ilk kez tespit edilen sürücünün belgesi ne kadar süreyle geri alınır?",
+    "secenekler": {
+      "A": "1 ay",
+      "B": "3 ay",
+      "C": "6 ay",
+      "D": "2 yıl"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 188,
+    "kategori": "İlkyardım",
+    "soru": "Göze toz kaçması durumunda ilkyardım olarak ne yapılmalıdır?",
+    "secenekler": {
+      "A": "Göz sertçe ovulmalıdır",
+      "B": "Göz bol temiz suyla yıkanmalıdır",
+      "C": "Göz kapatılıp ışığa bakılmalıdır",
+      "D": "Cımbızla toz alınmaya çalışılmalıdır"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 189,
+    "kategori": "Araç Tekniği",
+    "soru": "Debriyajın kaçırmasının (pedal tam bırakılsa da aracın hızlanmaması) sebebi nedir?",
+    "secenekler": {
+      "A": "Fren hidroliği bitmiştir",
+      "B": "Debriyaj balatası aşınmıştır",
+      "C": "Lastik havası çoktur",
+      "D": "Motor yağı fazladır"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 190,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Fren mesafesi aşağıdakilerden hangisinden etkilenmez?",
+    "secenekler": {
+      "A": "Yolun eğimi",
+      "B": "Yolun ıslak veya kuru olması",
+      "C": "Aracın hızı",
+      "D": "Aracın rengi"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 191,
+    "kategori": "İlkyardım",
+    "soru": "Kafatası ve omurga yaralanmalarında yaralının hastaneye sevki sırasında hangi pozisyon en güvenlidir?",
+    "secenekler": {
+      "A": "Sırt üstü, hareketsiz ve düz bir yatış",
+      "B": "Yan yatış",
+      "C": "Yarı oturuş",
+      "D": "Yüz üstü yatış"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 192,
+    "kategori": "Araç Tekniği",
+    "soru": "Hava filtresinin değiştirilmesi gecikirse motor nasıl bir performans sergiler?",
+    "secenekler": {
+      "A": "Güçten düşer ve yakıt sarfiyatı artar",
+      "B": "Daha hızlı gider",
+      "C": "Hiç çalışmaz",
+      "D": "Yağ yakmaya başlar"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 193,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Aşağıdakilerden hangisi trafik kazalarının çevresel nedenlerinden biridir?",
+    "secenekler": {
+      "A": "Sürücünün uykusuz olması",
+      "B": "Yolun bozuk veya kaygan olması",
+      "C": "Aracın freninin patlaması",
+      "D": "Yayanın dikkatsizliği"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 194,
+    "kategori": "İlkyardım",
+    "soru": "Yılan sokmasında ilk yardım olarak hangisi yapılması yanlıştır?",
+    "secenekler": {
+      "A": "Isırılan yerin emilerek zehrin boşaltılması",
+      "B": "Isırılan bölgenin hareket ettirilmemesi",
+      "C": "Bölgenin kalp seviyesinin altında tutulması",
+      "D": "Tıbbi yardım istenmesi"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 195,
+    "kategori": "Araç Tekniği",
+    "soru": "Vantilatör kayışı koptuğunda motorun hararet yapmasının sebebi nedir?",
+    "secenekler": {
+      "A": "Su pompasının dönmemesi ve soğutma sıvısının dolaşmaması",
+      "B": "Aküden gelen elektriğin kesilmesi",
+      "C": "Yağ filtresinin tıkanması",
+      "D": "Yakıtın bitmesi"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 196,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Sürücülerin 'Yol Ver' levhasını gördüklerinde yapmaları gereken en doğru davranış nedir?",
+    "secenekler": {
+      "A": "Hızlanarak kavşağa girmek",
+      "B": "Ana yoldan gelen araçlara geçiş hakkını tanımak",
+      "C": "Sadece korna çalmak",
+      "D": "Her durumda durmak"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 197,
+    "kategori": "İlkyardım",
+    "soru": "Kaza yapmış bir araçta yangın tehlikesi varsa yaralıyı araçtan çıkarmak için kullanılan manevra hangisidir?",
+    "secenekler": {
+      "A": "Heimlich manevrası",
+      "B": "Rentek manevrası",
+      "C": "Koma pozisyonu",
+      "D": "Şok pozisyonu"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 198,
+    "kategori": "Araç Tekniği",
+    "soru": "Aracın lastiklerinin yan duvarlarında görülen çatlakların sebebi genellikle nedir?",
+    "secenekler": {
+      "A": "Lastiğin ömrünün dolması veya güneş ışığında uzun süre beklemesi",
+      "B": "Frenlerin çok tutması",
+      "C": "Yağmur suyu",
+      "D": "Düşük hızda sürüş"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 199,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Öndeki aracı geçmeye başlamadan önce yapılması gereken ilk işlem hangisidir?",
+    "secenekler": {
+      "A": "Sinyal vermek",
+      "B": "Korna çalmak",
+      "C": "Dikiz aynalarından yolun güvenli olduğunu kontrol etmek",
+      "D": "Vites küçültmek"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 200,
+    "kategori": "İlkyardım",
+    "soru": "İlkyardımın temel amacı nedir?",
+    "secenekler": {
+      "A": "İlaçla tedavi etmek",
+      "B": "Hayati tehlikeyi ortadan kaldırmak ve durumun kötüleşmesini önlemek",
+      "C": "Ameliyat yapmak",
+      "D": "Hastaneye sürücü olarak gitmek"
+    },
+    "cevap": "B"
+  }
+]

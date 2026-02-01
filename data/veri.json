@@ -1,0 +1,662 @@
+[
+  {
+    "id": 1,
+    "kategori": "İlkyardım",
+    "soru": "Aşağıdakilerden hangisi ilkyardımın temel uygulamalarından biri değildir?",
+    "secenekler": {
+      "A": "Koruma",
+      "B": "Bildirme",
+      "C": "Kurtarma",
+      "D": "Tedavi etme"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 2,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Aksine bir işaret yoksa, yerleşim yeri dışındaki şehirler arası çift yönlü karayollarında otomobiller için azami hız sınırı saatte kaç kilometredir?",
+    "secenekler": {
+      "A": "70",
+      "B": "80",
+      "C": "90",
+      "D": "100"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 3,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorun soğutma sisteminde kullanılan antifriz, aşağıdakilerden hangisini önler?",
+    "secenekler": {
+      "A": "Motorun daha hızlı ısınmasını",
+      "B": "Radyatör suyunun donmasını",
+      "C": "Yağ seviyesinin artmasını",
+      "D": "Yakıt tüketiminin azalmasını"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 4,
+    "kategori": "Trafik Adabı",
+    "soru": "Trafikte hangi temel değere sahip olan sürücü, aracını park ettiği yerin diğer yol kullanıcılarının geçişini engelleyip engellemediğine dikkat eder?",
+    "secenekler": {
+      "A": "Bencillik",
+      "B": "Empati",
+      "C": "Tahammülsüzlük",
+      "D": "Öfke"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 5,
+    "kategori": "İlkyardım",
+    "soru": "Solunum yolu tam tıkanmış bir kazazedeye hangi teknik uygulanır?",
+    "secenekler": {
+      "A": "Rentek manevrası",
+      "B": "Heimlich manevrası",
+      "C": "Turnike uygulaması",
+      "D": "Şok pozisyonu"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 6,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Sürücülerin kavşaklara yaklaşırken hızlarını azaltmaları, hangi trafik kuralına uymak içindir?",
+    "secenekler": {
+      "A": "Güvenli sürüş ve kaza riskini azaltma",
+      "B": "Daha hızlı yol alma",
+      "C": "Yakıt tasarrufu sağlama",
+      "D": "Yolcu memnuniyeti"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 7,
+    "kategori": "Araç Tekniği",
+    "soru": "Seyir halindeyken aracın gösterge panelinde yağ lambası yanarsa ne yapılmalıdır?",
+    "secenekler": {
+      "A": "Hız artırılmalıdır",
+      "B": "Yola devam edilmelidir",
+      "C": "Araç hemen durdurulmalı ve kontak kapatılmalıdır",
+      "D": "Farlara bakılmalıdır"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 8,
+    "kategori": "İlkyardım",
+    "soru": "Yetişkin bir insanda normal nabız sayısı dakikada kaçtır?",
+    "secenekler": {
+      "A": "40-60",
+      "B": "60-100",
+      "C": "100-120",
+      "D": "120-140"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 9,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Geceleyin arkasındaki aracı rahatsız etmemek için sürücü hangi farları kullanmalıdır?",
+    "secenekler": {
+      "A": "Uzak farları",
+      "B": "Park ışıklarını",
+      "C": "Yakın farları",
+      "D": "Sis farlarını"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 10,
+    "kategori": "Araç Tekniği",
+    "soru": "Lastik hava basınçlarının çok düşük olması aşağıdakilerden hangisine neden olur?",
+    "secenekler": {
+      "A": "Fren mesafesinin kısalmasına",
+      "B": "Yakıt tüketiminin artmasına",
+      "C": "Motorun ısınmasına",
+      "D": "Vitesin zor geçmesine"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 11,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Kontrolsüz kavşakta karşılaşan araçlardan hangisi ilk geçiş hakkına sahiptir?",
+    "secenekler": {
+      "A": "Soldaki araç",
+      "B": "Sağdaki araç",
+      "C": "Hızı az olan araç",
+      "D": "Büyük olan araç"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 12,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorun silindirleri içinde yakılan yakıtın enerjisini mekanik enerjiye çeviren parça hangisidir?",
+    "secenekler": {
+      "A": "Radyatör",
+      "B": "Piston",
+      "C": "Alternatör",
+      "D": "Distribütör"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 13,
+    "kategori": "İlkyardım",
+    "soru": "Vücuttaki kanın % kaçı kaybedilirse hayati tehlike başlar?",
+    "secenekler": {
+      "A": "5",
+      "B": "10",
+      "C": "20",
+      "D": "40"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 14,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Takip mesafesi, hızın en az kaçı kadar metre olmalıdır?",
+    "secenekler": {
+      "A": "Yarısı",
+      "B": "Üçte biri",
+      "C": "İki katı",
+      "D": "Dörtte biri"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 15,
+    "kategori": "Araç Tekniği",
+    "soru": "Benzinli bir motorda buji hangi zamanın sonunda ateşleme yapar?",
+    "secenekler": {
+      "A": "Emme",
+      "B": "Sıkıştırma",
+      "C": "Ateşleme (İş)",
+      "D": "Egzoz"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 16,
+    "kategori": "Trafik Adabı",
+    "soru": "Trafikte yardımlaşma duygusuna sahip olan bir sürücü aşağıdakilerden hangisini yapar?",
+    "secenekler": {
+      "A": "Yol vermekten kaçınır",
+      "B": "Sürekli korna çalar",
+      "C": "Arızalı bir araca yardım eder",
+      "D": "Hız sınırlarını aşar"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 17,
+    "kategori": "İlkyardım",
+    "soru": "Omurga yaralanması olan bir kazazede nasıl taşınmalıdır?",
+    "secenekler": {
+      "A": "Sırt üstü sert bir zeminde",
+      "B": "Yüz üstü",
+      "C": "Oturur pozisyonda",
+      "D": "Kucakta"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 18,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Şehir içi yollarda aksine bir işaret yoksa azami hız sınırı kaç km/saattir?",
+    "secenekler": {
+      "A": "30",
+      "B": "50",
+      "C": "70",
+      "D": "90"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 19,
+    "kategori": "Araç Tekniği",
+    "soru": "Akü içerisindeki elektrolit seviyesi plakaların neresinde olmalıdır?",
+    "secenekler": {
+      "A": "Altında",
+      "B": "Hizasında",
+      "C": "1-1.5 cm üzerinde",
+      "D": "En dibinde"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 20,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Dönel kavşaklarda (ada) ilk geçiş hakkı kime aittir?",
+    "secenekler": {
+      "A": "Ada dışındaki araca",
+      "B": "Ada içindeki araca",
+      "C": "Büyük olan araca",
+      "D": "Düz giden araca"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 21,
+    "kategori": "İlkyardım",
+    "soru": "Kırık, çıkık ve burkulmalarda uygulanacak ilk işlem nedir?",
+    "secenekler": {
+      "A": "Masaj yapmak",
+      "B": "Sıcak uygulama",
+      "C": "Hareketsizliği sağlamak (Tespit)",
+      "D": "Hareket ettirmek"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 22,
+    "kategori": "Araç Tekniği",
+    "soru": "Fren lambalarından biri yanıyor diğeri yanmıyorsa sebebi hangisidir?",
+    "secenekler": {
+      "A": "Akü bitmiştir",
+      "B": "Fren müşürü arızalıdır",
+      "C": "Ampulü patlamıştır",
+      "D": "Fren hidroliği bitmiştir"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 23,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Gündüzleri sisli havalarda hangi lambalar yakılmalıdır?",
+    "secenekler": {
+      "A": "Sadece park lambaları",
+      "B": "Sadece kısa farlar",
+      "C": "Sadece sis farları",
+      "D": "Kısa farlar veya sis farları"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 24,
+    "kategori": "İlkyardım",
+    "soru": "Bebeklerde temel yaşam desteği yapılırken kalp basısı nereye uygulanır?",
+    "secenekler": {
+      "A": "Karın üst kısmına",
+      "B": "Göğüs merkezine (iki meme başı altına)",
+      "C": "Sırt bölgesine",
+      "D": "Boyun bölgesine"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 25,
+    "kategori": "Araç Tekniği",
+    "soru": "Motor yağının görevi aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Motorun soğumasını engellemek",
+      "B": "Parçaların aşınmasını önlemek",
+      "C": "Yakıt tüketimini artırmak",
+      "D": "Lastiklerin ısınmasını sağlamak"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 36,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Karayolu üzerinde iki yönlü trafiğin kullanıldığı yollarda, yan yana çizilmiş iki devamlı yol çizgisi neyi bildirir?",
+    "secenekler": {
+      "A": "Hiçbir sebeple karşı şeride geçilemeyeceğini",
+      "B": "Öndeki aracın geçilebileceğini",
+      "C": "Yolun sadece tek yönlü olduğunu",
+      "D": "Park yapılabileceğini"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 37,
+    "kategori": "Araç Tekniği",
+    "soru": "Motorun hararet yapmasının nedenlerinden biri aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Vantilatör kayışının kopması",
+      "B": "Lastik hava basıncının yüksek olması",
+      "C": "Yakıtın bitmesi",
+      "D": "Fren balatalarının aşınması"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 38,
+    "kategori": "İlkyardım",
+    "soru": "Isı ile oluşan yanıklarda ilk yardım olarak aşağıdakilerden hangisinin yapılması doğrudur?",
+    "secenekler": {
+      "A": "Yanık bölgeye diş macunu sürmek",
+      "B": "Oluşan su kabarcıklarını patlatmak",
+      "C": "Yanık bölgeyi en az 20 dakika tazyiksiz akan su altında tutmak",
+      "D": "Buzlu suya daldırmak"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 39,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Tehlikeli madde taşıyan araçlar, yerleşim birimleri dışındaki karayollarında diğer araçları en az kaç metre mesafeden takip etmelidir?",
+    "secenekler": {
+      "A": "20",
+      "B": "30",
+      "C": "40",
+      "D": "50"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 40,
+    "kategori": "Araç Tekniği",
+    "soru": "Radyatöre konulacak suyun seviyesi ne kadar olmalıdır?",
+    "secenekler": {
+      "A": "Peteklerin üzerinde",
+      "B": "Peteklerin altında",
+      "C": "Radyatörün ortasında",
+      "D": "En dibinde"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 41,
+    "kategori": "İlkyardım",
+    "soru": "Burkulmalarda ilk yardım olarak hangisi uygulanır?",
+    "secenekler": {
+      "A": "Eklemi kalp seviyesinden aşağıda tutmak",
+      "B": "Eklemin hareket ettirilmesini sağlamak",
+      "C": "Şişliği azaltmak için soğuk uygulama yapmak",
+      "D": "Sıcak merhem sürmek"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 42,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Yaya yolu bulunmayan karayollarında, yayaların hangi taraftan yürümesi zorunludur?",
+    "secenekler": {
+      "A": "Gidiş yönüne göre sağ banketten",
+      "B": "Gidiş yönüne göre sol banketten",
+      "C": "Yolun tam ortasından",
+      "D": "İstediği taraftan"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 43,
+    "kategori": "Araç Tekniği",
+    "soru": "Araçta yakıt tasarrufu sağlamak için aşağıdakilerden hangisi yapılır?",
+    "secenekler": {
+      "A": "Eskimiş bujiler değiştirilir",
+      "B": "Lastik hava basınçları indirilir",
+      "C": "Ani duruş ve kalkışlar yapılır",
+      "D": "Sürekli yüksek devirde sürülür"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 44,
+    "kategori": "İlkyardım",
+    "soru": "Suni solunum yapılacak olan kazazedenin ağız içi temizlenirken hangi pozisyon verilir?",
+    "secenekler": {
+      "A": "Sırt üstü",
+      "B": "Yan yatış",
+      "C": "Yüz üstü",
+      "D": "Baş-Çene pozisyonu"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 45,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Kamu hizmeti yapan yolcu taşıtlarının duraklarını belirten levhalara her iki yönden kaç metre mesafede park etmek yasaktır?",
+    "secenekler": {
+      "A": "5",
+      "B": "10",
+      "C": "15",
+      "D": "20"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 46,
+    "kategori": "Araç Tekniği",
+    "soru": "Hava filtresi kirli ise motor nasıl bir karışımla çalışır?",
+    "secenekler": {
+      "A": "Fakir",
+      "B": "Zengin",
+      "C": "Normal",
+      "D": "Sadece hava"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 47,
+    "kategori": "İlkyardım",
+    "soru": "Burun kanaması olan bir kazazedeye hangi pozisyon verilir?",
+    "secenekler": {
+      "A": "Başı geriye doğru itilir",
+      "B": "Sırt üstü yatırılır",
+      "C": "Başı hafifçe öne eğilerek oturtulur",
+      "D": "Ayaklar yukarı kaldırılır"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 48,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Otoyolda seyreden bir araç, arıza durumunda en sağdaki güvenlik şeridinde dururken hangi önlemi almalıdır?",
+    "secenekler": {
+      "A": "Dörtlü ikaz lambalarını yakmalı ve reflektör koymalı",
+      "B": "Hemen araçtan uzaklaşmalı",
+      "C": "Aracı orada bırakıp yardım aramalı",
+      "D": "Sadece park lambalarını yakmalı"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 49,
+    "kategori": "Araç Tekniği",
+    "soru": "Aracın lastikleri ne zaman kontrol edilmelidir?",
+    "secenekler": {
+      "A": "Haftada bir",
+      "B": "Ayda bir",
+      "C": "Altı ayda bir",
+      "D": "Araca her binildiğinde"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 50,
+    "kategori": "Trafik Adabı",
+    "soru": "Trafikte hangi durum, sabırsızlık ve öfkenin sonucunda oluşabilecek bir risktir?",
+    "secenekler": {
+      "A": "Güvenli sürüş",
+      "B": "Dikkat dağınıklığı ve kaza",
+      "C": "Yakıt tasarrufu",
+      "D": "Yolculuk süresinin kısalması"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 61,
+    "kategori": "Araç Tekniği",
+    "soru": "Seyir halindeyken aracın gösterge panelinde 'şarj ikaz ışığı' yanarsa muhtemel arıza hangisidir?",
+    "secenekler": {
+      "A": "Vantilatör kayışı kopmuştur veya gevşemiştir",
+      "B": "Fren hidroliği bitmiştir",
+      "C": "Motor yağı azalmıştır",
+      "D": "Lastik basıncı düşüktür"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 62,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Aşağıdakilerden hangisi geçiş üstünlüğüne sahip araçların sürülmesine ilişkin esaslardan biri değildir?",
+    "secenekler": {
+      "A": "Bu hakkın can ve mal güvenliğini tehlikeye sokmamak şartıyla kullanılması",
+      "B": "Işıklı ve sesli uyarı işaretlerinin birlikte verilmesi",
+      "C": "Görev hali dışında bu hakkın kullanılmaması",
+      "D": "Emniyet kemeri takma zorunluluğunun olmaması"
+    },
+    "cevap": "D"
+  },
+  {
+    "id": 63,
+    "kategori": "İlkyardım",
+    "soru": "Açık karın yaralanması olan bir kazazedeye hangi pozisyon verilir?",
+    "secenekler": {
+      "A": "Sırt üstü yatırılır, dizler bükülerek karna çekilir",
+      "B": "Yan yatırılır",
+      "C": "Yüz üstü yatırılır",
+      "D": "Yarı oturuş pozisyonu verilir"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 64,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Kırmızı ışıkla birlikte yanan sarı ışıkta sürücü ne yapmalıdır?",
+    "secenekler": {
+      "A": "Hemen durmalıdır",
+      "B": "Yolun kapanacağını anlamalıdır",
+      "C": "Kalkışa hazırlanmalıdır",
+      "D": "Geri gitmelidir"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 65,
+    "kategori": "Araç Tekniği",
+    "soru": "Dizel motorlu araçlarda yakıt sisteminin hava yapmasının nedeni aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Depodaki yakıtın bitmesi",
+      "B": "Hava filtresinin kirlenmesi",
+      "C": "Yağ filtresinin tıkanması",
+      "D": "Enjektörlerin arızalanması"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 66,
+    "kategori": "İlkyardım",
+    "soru": "Koma durumundaki kazazedeye aşağıdaki pozisyonlardan hangisi verilmelidir?",
+    "secenekler": {
+      "A": "Şok pozisyonu",
+      "B": "Sırt üstü yatış",
+      "C": "Yarı yüz üstü yan yatış (Koma pozisyonu)",
+      "D": "Baş-Çene pozisyonu"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 67,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Ticari amaçla yük ve yolcu taşımacılığı yapan araç sürücülerinin, 24 saatlik süre içinde toplam olarak kaç saat araç kullanmaları yasaktır?",
+    "secenekler": {
+      "A": "5 saatten fazla",
+      "B": "7 saatten fazla",
+      "C": "9 saatten fazla",
+      "D": "11 saatten fazla"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 68,
+    "kategori": "Araç Tekniği",
+    "soru": "Soğuk havalarda araç motorunun kolay çalışmasını aşağıdakilerden hangisi sağlar?",
+    "secenekler": {
+      "A": "Kızdırma bujisi (Isıtma bujisi)",
+      "B": "Hava filtresi",
+      "C": "Marş motoru",
+      "D": "Yağ pompası"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 69,
+    "kategori": "Trafik Adabı",
+    "soru": "Denetim ve ceza korkusu olmadan trafik kurallarına uymanın nedeni nedir?",
+    "secenekler": {
+      "A": "Trafik kültürü ve adabına sahip olmak",
+      "B": "Para biriktirmek",
+      "C": "Polisten korkmak",
+      "D": "Araç bakımını geciktirmek"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 70,
+    "kategori": "İlkyardım",
+    "soru": "Kanamalarda turnike uygulaması hangi durumda tercih edilir?",
+    "secenekler": {
+      "A": "Her türlü kanamada",
+      "B": "Uzuv kopması varsa veya çok sayıda kazazede olup baskı uygulanamıyorsa",
+      "C": "Sadece baş yaralanmalarında",
+      "D": "Burun kanamalarında"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 71,
+    "kategori": "Araç Tekniği",
+    "soru": "Debriyaj balatasının sıyırarak aşınmasının sebebi aşağıdakilerden hangisidir?",
+    "secenekler": {
+      "A": "Ani ve sert kalkışlar yapmak",
+      "B": "Aracı düşük devirde kullanmak",
+      "C": "Lastik havalarının düşük olması",
+      "D": "Fren lambalarının yanmaması"
+    },
+    "cevap": "A"
+  },
+  {
+    "id": 72,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Geceleri karşı yönden gelen araç sürücülerinin gözlerini kamaştırmamak için hangi farlar yakılmalıdır?",
+    "secenekler": {
+      "A": "Uzak farlar",
+      "B": "Yakın farlar",
+      "C": "Sis farları",
+      "D": "Acil uyarı ışıkları"
+    },
+    "cevap": "B"
+  },
+  {
+    "id": 73,
+    "kategori": "İlkyardım",
+    "soru": "Bebeklerde (0-1 yaş) dış kalp masajı göğüs kemiği kaç cm çökecek şekilde yapılır?",
+    "secenekler": {
+      "A": "1 cm",
+      "B": "2 cm",
+      "C": "4 cm",
+      "D": "8 cm"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 74,
+    "kategori": "Araç Tekniği",
+    "soru": "Lastiklerin üzerinde bulunan rakamlar (örneğin 195/65 R15) neyi ifade eder?",
+    "secenekler": {
+      "A": "Lastiğin markasını",
+      "B": "Lastiğin üretim tarihini",
+      "C": "Lastiğin ebatlarını ve jant çapını",
+      "D": "Aracın azami hızını"
+    },
+    "cevap": "C"
+  },
+  {
+    "id": 75,
+    "kategori": "Trafik ve Çevre",
+    "soru": "Yangın musluklarına her iki yönden kaç metre mesafede park etmek yasaktır?",
+    "secenekler": {
+      "A": "5 metre",
+      "B": "10 metre",
+      "C": "15 metre",
+      "D": "20 metre"
+    },
+    "cevap": "A"
+  }
+]
