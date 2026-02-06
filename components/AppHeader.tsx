@@ -32,6 +32,14 @@ const CALISMA_TITLE_MAP: Record<string, string> = {
   bakim: 'Araç Tekniği',
 };
 
+/** Virgülle ayrılmış kategori ID'lerini başlığa çevir */
+function getCalismaTitle(nested: string): string {
+  const ids = nested.split(',').filter(Boolean);
+  if (ids.length === 1) return CALISMA_TITLE_MAP[ids[0]] ?? ids[0];
+  if (ids.length <= 3) return ids.map((id) => CALISMA_TITLE_MAP[id] ?? id).join(', ');
+  return `${ids.length} Kategori`;
+}
+
 function getTitle(pathname: string): string {
   const normalized = pathname.replace(/^\/(tabs\/)?/, '');
   const segments = normalized.split('/').filter(Boolean);
@@ -39,7 +47,7 @@ function getTitle(pathname: string): string {
   if (segments.length > 1) {
     const nested = segments[1];
     if (base === 'calisma') {
-      return CALISMA_TITLE_MAP[nested] ?? nested.charAt(0).toUpperCase() + nested.slice(1);
+      return getCalismaTitle(nested);
     }
     return NESTED_TITLE_MAP[nested] ?? TITLE_MAP[base] ?? 'B Ehliyet';
   }

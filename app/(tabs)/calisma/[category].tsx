@@ -1,302 +1,298 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { BorderRadius, Colors, getCardShadow, Spacing } from '@/constants/theme';
 import { useContent } from '@/context/ContentContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import {
-    generateQuestionsForCategory,
-    generateWrongExplanation,
-    type AIQuestion,
-} from '@/lib/groq';
 import { getQuestionImageSource } from '@/data/tabelaImages';
-import { getIsaretQuestions } from '@/data/isaretSorulari';
+import { shuffleArray } from '@/data/mockData';
+import { generateWrongExplanation } from '@/lib/groq';
+import type { Question } from '@/types';
 
-type CalismaQuestion = AIQuestion & { imageCode?: string };
+const PRACTICE_COUNT = 15;
+const CATEGORY_TO_SOURCE: Record<string, string> = { kurallar: 'trafik', bakim: 'motor' };
 
 export default function CalismaCategoryScreen() {
-  const { category, categoryName } = useLocalSearchParams<{
-    category: string;
-    categoryName?: string;
-  }>();
+  /** category param: virgülle ayrılmış kategori ID'leri (ör. "trafik,ilkyardim,motor") */
+  const { category } = useLocalSearchParams<{ category: string }>();
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
 
-  const { categories } = useContent();
-  const displayName =
-    categoryName ??
-    categories.find((cat) => cat.id === category)?.name ??
-    category;
+  const { categories, questions: allQuestions, isContentLoading } = useContent();
 
-  const [questions, setQuestions] = useState<CalismaQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const categoryIds = (category ?? '').split(',').filter(Boolean);
+  const displayName = categoryIds.length > 2
+    ? `${categoryIds.length} kategori`
+    : categoryIds.map((id) => categories.find((cat) => cat.id === id)?.name ?? id).join(', ');
+
+  const [sessionKey, setSessionKey] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [finished, setFinished] = useState(false);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
   const [explanationError, setExplanationError] = useState(false);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
-  const LOADING_MESSAGES = [
-    'EhliyetAI soruları hazırlıyor…',
-    'Sorular oluşturuluyor…',
-    'Biraz daha bekleyin…',
-    'Neredeyse hazır…',
-  ];
+  /** Seçilen kategorilerden 15 karışık soru */
+  const questions: Question[] = useMemo(() => {
+    if (isContentLoading) return [];
+    const sourceIds = new Set(categoryIds.map((id) => CATEGORY_TO_SOURCE[id] ?? id));
+    const pool = allQuestions.filter((q) => sourceIds.has(q.categoryId));
+    return shuffleArray(pool).slice(0, PRACTICE_COUNT);
+  }, [category, sessionKey, isContentLoading]);
 
-  useEffect(() => {
-    if (!loading) return;
-    setLoadingMessageIndex(0);
-    const interval = setInterval(() => {
-      setLoadingMessageIndex((i) => (i + 1) % LOADING_MESSAGES.length);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [loading]);
-
-  const loadQuestions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (category === 'isaretler') {
-        const localList = getIsaretQuestions(10);
-        const list: CalismaQuestion[] = localList.map((q) => ({
-          soru: q.text,
-          siklar: q.options,
-          dogruIndex: q.correctIndex,
-          imageCode: q.imageCode,
-        }));
-        setQuestions(list);
-      } else {
-        const list = await generateQuestionsForCategory(displayName);
-        setQuestions(list);
-      }
-      setCurrentIndex(0);
-      setSelectedIndex(null);
-      setExplanation(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Soru yüklenemedi.');
-    } finally {
-      setLoading(false);
-    }
-  }, [displayName, category]);
-
-  useEffect(() => {
-    loadQuestions();
-  }, [loadQuestions]);
-
-  const q = questions[currentIndex];
   const total = questions.length;
-  const isLast = currentIndex === total - 1;
+  const q = questions[currentIndex];
+  const hasAnswered = selectedIndex !== null;
+  const isCorrect = q && selectedIndex === q.correctIndex;
+  const isLast = currentIndex >= total - 1;
 
-  const handleSelectOption = async (optionIndex: number) => {
-    if (selectedIndex !== null) return;
+  useEffect(() => {
+    setCurrentIndex(0);
+    setSelectedIndex(null);
+    setCorrectCount(0);
+    setFinished(false);
+    setExplanation(null);
+    setLoadingExplanation(false);
+    setExplanationError(false);
+  }, [sessionKey]);
+
+  const handleSelectOption = (optionIndex: number) => {
+    if (hasAnswered) return;
     setSelectedIndex(optionIndex);
-    const correct = q.dogruIndex === optionIndex;
-    if (correct) return;
-    setLoadingExplanation(true);
-    try {
-      const text = await generateWrongExplanation(
-        q.soru,
-        q.siklar,
-        optionIndex,
-        q.dogruIndex
-      );
-      setExplanation(text);
-      setExplanationError(false);
-    } catch (e) {
-      setExplanation(null);
-      setExplanationError(true);
-    } finally {
-      setLoadingExplanation(false);
+    setExplanation(null);
+    setExplanationError(false);
+    if (q && optionIndex === q.correctIndex) {
+      setCorrectCount((c) => c + 1);
+      return;
+    }
+    if (q && optionIndex !== q.correctIndex) {
+      if (q.explanation) {
+        setExplanation(q.explanation);
+        return;
+      }
+      setLoadingExplanation(true);
+      generateWrongExplanation(q.text, q.options, optionIndex, q.correctIndex)
+        .then((text) => {
+          setExplanation(text);
+          setExplanationError(false);
+        })
+        .catch(() => {
+          setExplanation(null);
+          setExplanationError(true);
+        })
+        .finally(() => setLoadingExplanation(false));
     }
   };
 
-  const retryExplanation = useCallback(async () => {
+  const retryExplanation = useCallback(() => {
     if (!q || selectedIndex === null) return;
     setLoadingExplanation(true);
     setExplanationError(false);
-    try {
-      const text = await generateWrongExplanation(
-        q.soru,
-        q.siklar,
-        selectedIndex,
-        q.dogruIndex
-      );
-      setExplanation(text);
-    } catch (e) {
-      setExplanationError(true);
-    } finally {
-      setLoadingExplanation(false);
-    }
+    generateWrongExplanation(q.text, q.options, selectedIndex, q.correctIndex)
+      .then((text) => setExplanation(text))
+      .catch(() => setExplanationError(true))
+      .finally(() => setLoadingExplanation(false));
   }, [q, selectedIndex]);
 
   const handleNext = () => {
     setSelectedIndex(null);
     setExplanation(null);
+    setLoadingExplanation(false);
     setExplanationError(false);
     if (isLast) {
-      Alert.alert(
-        'Tamamlandı',
-        `${total} soruyu tamamladın. Başka kategoriye çalışmak ister misin?`,
-        [
-          { text: 'Kategorilere dön', onPress: () => router.back() },
-          { text: 'Tekrarla', onPress: () => loadQuestions() },
-        ]
-      );
+      setFinished(true);
       return;
     }
     setCurrentIndex((i) => i + 1);
   };
 
-  if (loading) {
+  const restart = () => {
+    setSessionKey((k) => k + 1);
+  };
+
+  /* ─── Sonuç ekranı ─── */
+  if (finished) {
+    const puan = total > 0 ? Math.round((correctCount / total) * 100) : 0;
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={c.primary} />
-          <Text style={[styles.loadingText, { color: c.textSecondary }]}>
-            {LOADING_MESSAGES[loadingMessageIndex]}
-          </Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={[styles.resultContent, { paddingBottom: insets.bottom + Spacing.xl }]}
+          showsVerticalScrollIndicator={false}>
+          <View style={[styles.resultCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+            <Text style={[styles.resultTitle, { color: c.text }]}>{displayName}</Text>
+            <Text style={[styles.resultScore, { color: c.primary }]}>
+              {correctCount} / {total} doğru
+            </Text>
+            <Text style={[styles.resultPuan, { color: c.primary }]}>{puan} puan</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
+            onPress={restart}
+            activeOpacity={0.8}>
+            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Tekrar çöz</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.outlineBtn, { borderColor: c.border }]}
+            onPress={() => router.back()}
+            activeOpacity={0.8}>
+            <Text style={[styles.outlineBtnText, { color: c.text }]}>Kategorilere dön</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
-  if (error || questions.length === 0) {
+  /* ─── Soru yok ─── */
+  if (total === 0) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
         <View style={styles.centered}>
-          <MaterialIcons name="error-outline" size={48} color={c.error} />
-          <Text style={[styles.errorTitle, { color: c.text }]}>Bir hata oluştu</Text>
-          <Text style={[styles.errorText, { color: c.textSecondary }]}>
-            Sorular yüklenirken bir sorun yaşandı. Lütfen tekrar deneyin.
-          </Text>
+          <MaterialIcons name="quiz" size={48} color={c.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: c.text }]}>Bu kategoride soru yok</Text>
           <TouchableOpacity
-            style={[styles.retryBtn, { backgroundColor: c.primary }]}
-            onPress={loadQuestions}
+            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
+            onPress={() => router.back()}
             activeOpacity={0.8}>
-            <Text style={[styles.retryBtnText, { color: c.primaryContrast }]}>Tekrar dene</Text>
+            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Geri dön</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const correct = selectedIndex !== null && selectedIndex === q.dogruIndex;
-  const showExplanation = selectedIndex !== null && !correct && (explanation !== null || loadingExplanation);
+  /* ─── Soru ekranı ─── */
+  const imgSrc = q.imageCode ? getQuestionImageSource(q.imageCode) : undefined;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <MaterialIcons name="arrow-back" size={24} color={c.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: c.text }]}>
+          Soru {currentIndex + 1} / {total}
+        </Text>
+        <View style={styles.headerRight}>
+          <MaterialIcons name="check-circle" size={18} color={c.success} />
+          <Text style={[styles.headerCorrect, { color: c.success }]}>{correctCount}</Text>
+        </View>
+      </View>
+
+      {/* Progress bar */}
+      <View style={[styles.progressBg, { backgroundColor: c.border }]}>
+        <View
+          style={[styles.progressFill, { backgroundColor: c.primary, width: `${((currentIndex + 1) / total) * 100}%` }]}
+        />
+      </View>
+
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
-        <View style={[styles.questionBlock, { backgroundColor: c.card, borderColor: c.border }]}>
-          {q.imageCode && getQuestionImageSource(q.imageCode) && (
-            <View style={styles.signImageWrap}>
-              <Image
-                source={getQuestionImageSource(q.imageCode)!}
-                style={styles.signImage}
-                resizeMode="contain"
-              />
-            </View>
-          )}
-          <Text style={[styles.questionText, { color: c.text }]}>{q.soru}</Text>
-          <View style={styles.options}>
-            {q.siklar.map((opt, idx) => {
-              const isSelected = selectedIndex === idx;
-              const isCorrect = idx === q.dogruIndex;
-              const showCorrect = selectedIndex !== null;
-              const bg =
-                showCorrect && isCorrect
-                  ? c.success + '20'
-                  : isSelected && !correct
-                    ? c.error + '20'
-                    : c.card;
-              const border =
-                showCorrect && isCorrect
-                  ? c.success
-                  : isSelected && !correct
-                    ? c.error
-                    : c.border;
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  style={[styles.option, { backgroundColor: bg, borderColor: border }]}
-                  onPress={() => handleSelectOption(idx)}
-                  disabled={selectedIndex !== null}
-                  activeOpacity={0.7}>
-                  <Text style={[styles.optionText, { color: c.text }]}>
-                    {['A', 'B', 'C', 'D'][idx]}) {opt}
-                  </Text>
-                  {showCorrect && isCorrect && (
-                    <MaterialIcons name="check-circle" size={22} color={c.success} />
-                  )}
-                  {isSelected && !correct && idx === selectedIndex && (
-                    <MaterialIcons name="cancel" size={22} color={c.error} />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        {selectedIndex !== null && correct && (
-          <View style={[styles.feedback, { backgroundColor: c.success + '18', borderColor: c.success }]}>
-            <MaterialIcons name="check-circle" size={24} color={c.success} />
-            <Text style={[styles.feedbackText, { color: c.text }]}>Doğru!</Text>
+        {/* Soru görseli */}
+        {imgSrc && (
+          <View style={styles.imageWrap}>
+            <Image source={imgSrc} style={styles.questionImage} resizeMode="contain" />
           </View>
         )}
 
-        {showExplanation && (
-          <View style={[styles.explanationBlock, { backgroundColor: c.card, borderColor: c.border }]}>
-            <Text style={[styles.explanationTitle, { color: c.primary }]}>Açıklama</Text>
-            {loadingExplanation ? (
+        <Text style={[styles.questionText, { color: c.text }]}>{q.text}</Text>
+
+        {/* Şıklar */}
+        <View style={[styles.optionsCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+          {q.options.map((opt, idx) => {
+            const isSel = selectedIndex === idx;
+            const isCor = idx === q.correctIndex;
+            const optImg = q.optionImages?.[idx];
+            const optImgSrc = optImg ? getQuestionImageSource(optImg) : undefined;
+
+            const bg = hasAnswered && isCor
+              ? c.success + '20'
+              : hasAnswered && isSel && !isCorrect
+                ? c.error + '20'
+                : isSel ? c.selectedBg : c.card;
+            const border = hasAnswered && isCor
+              ? c.success
+              : hasAnswered && isSel && !isCorrect
+                ? c.error
+                : isSel ? c.primary : c.border;
+
+            return (
+              <TouchableOpacity
+                key={idx}
+                style={[
+                  optImgSrc ? styles.optionWithImg : styles.option,
+                  { backgroundColor: bg, borderColor: border },
+                ]}
+                onPress={() => handleSelectOption(idx)}
+                disabled={hasAnswered}
+                activeOpacity={0.7}>
+                {optImgSrc ? (
+                  <View style={styles.optImgRow}>
+                    <Text style={[styles.optLabel, { color: c.text }]}>{['A', 'B', 'C', 'D'][idx]})</Text>
+                    <Image source={optImgSrc} style={styles.optImg} resizeMode="contain" />
+                  </View>
+                ) : (
+                  <Text style={[styles.optionText, { color: c.text }]}>
+                    {['A', 'B', 'C', 'D'][idx]}) {opt}
+                  </Text>
+                )}
+                {hasAnswered && isCor && <MaterialIcons name="check-circle" size={22} color={c.success} />}
+                {hasAnswered && isSel && !isCorrect && <MaterialIcons name="cancel" size={22} color={c.error} />}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Yanlış cevapta açıklama */}
+        {hasAnswered && !isCorrect && (
+          <View style={[styles.explanationCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+            <Text style={[styles.explanationTitle, { color: c.text }]}>Açıklama</Text>
+            {loadingExplanation && (
               <View style={styles.explanationLoading}>
                 <ActivityIndicator size="small" color={c.primary} />
-                <Text style={[styles.explanationLoadingText, { color: c.textSecondary }]}>
-                  EhliyetAI düşünüyor…
-                </Text>
+                <Text style={[styles.explanationLoadingText, { color: c.textMuted }]}>EhliyetAI düşünüyor…</Text>
               </View>
-            ) : explanationError ? (
-              <>
-                <Text style={[styles.explanationText, { color: c.textSecondary }]}>
-                  Açıklama yüklenirken bir sorun yaşandı. Tekrar denemek ister misin?
-                </Text>
-                <TouchableOpacity
-                  style={[styles.retryBtn, { backgroundColor: c.primary, marginTop: Spacing.md }]}
-                  onPress={retryExplanation}
-                  activeOpacity={0.8}>
-                  <Text style={[styles.retryBtnText, { color: c.primaryContrast }]}>Tekrar dene</Text>
+            )}
+            {explanationError && !loadingExplanation && (
+              <View style={styles.explanationError}>
+                <Text style={[styles.explanationErrorText, { color: c.textMuted }]}>Açıklama yüklenemedi.</Text>
+                <TouchableOpacity style={[styles.retryBtn, { borderColor: c.primary }]} onPress={retryExplanation} activeOpacity={0.8}>
+                  <Text style={[styles.retryBtnText, { color: c.primary }]}>Tekrar dene</Text>
                 </TouchableOpacity>
-              </>
-            ) : (
+              </View>
+            )}
+            {explanation && !loadingExplanation && (
               <Text style={[styles.explanationText, { color: c.text }]}>{explanation}</Text>
             )}
           </View>
         )}
 
-        {(selectedIndex !== null) &&
-          (correct || (!loadingExplanation && (explanation !== null || explanationError))) && (
+        {/* İleri butonu: doğru cevapta hemen, yanlışta açıklama yüklendikten veya hata sonrası */}
+        {hasAnswered && (isCorrect || explanation !== null || explanationError) && (
           <TouchableOpacity
             style={[styles.nextBtn, { backgroundColor: c.primary }]}
             onPress={handleNext}
             activeOpacity={0.8}>
             <Text style={[styles.nextBtnText, { color: c.primaryContrast }]}>
-              {isLast ? 'Bitir' : 'Sonraki soru'}
+              {isLast ? 'Sonuçları gör' : 'Sonraki soru'}
             </Text>
+            <MaterialIcons name="chevron-right" size={22} color={c.primaryContrast} />
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -307,57 +303,75 @@ export default function CalismaCategoryScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
-  loadingText: { marginTop: Spacing.md },
-  errorTitle: { fontSize: 18, fontWeight: '700', marginTop: Spacing.md },
-  errorText: { marginTop: Spacing.sm, textAlign: 'center', paddingHorizontal: Spacing.lg },
-  retryBtn: { marginTop: Spacing.lg, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10 },
-  retryBtnText: { fontSize: 16, fontWeight: '600' },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: Spacing.md, marginBottom: Spacing.lg },
+
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, borderBottomWidth: 1,
+  },
+  backBtn: { minWidth: 44, minHeight: 44, justifyContent: 'center', marginRight: Spacing.sm },
+  headerTitle: { fontSize: 17, fontWeight: '600', flex: 1, textAlign: 'center' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 44, justifyContent: 'flex-end' },
+  headerCorrect: { fontSize: 15, fontWeight: '700' },
+
+  progressBg: { height: 4, width: '100%' },
+  progressFill: { height: '100%', borderRadius: 2 },
+
   scroll: { flex: 1 },
-  scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.xl },
-  signImageWrap: { alignItems: 'center', marginBottom: Spacing.md },
-  signImage: { width: 120, height: 120 },
-  questionBlock: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-  },
-  questionText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.md },
-  options: { gap: 8 },
+  scrollContent: { padding: Spacing.md },
+
+  imageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
+  questionImage: { width: 200, height: 160, borderRadius: 8 },
+  questionText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.lg },
+
+  optionsCard: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, marginBottom: Spacing.md, gap: 8 },
   option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: Spacing.md,
-    borderRadius: 10,
-    borderWidth: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 12, paddingHorizontal: Spacing.md, borderRadius: 10, borderWidth: 1,
   },
+  optionWithImg: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 8, paddingHorizontal: Spacing.sm, borderRadius: 10, borderWidth: 1,
+  },
+  optImgRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: Spacing.sm },
+  optLabel: { fontSize: 15, fontWeight: '600' },
+  optImg: { width: 80, height: 60 },
   optionText: { fontSize: 15, flex: 1 },
-  feedback: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
+
+  explanationCard: {
+    padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, marginBottom: Spacing.md,
   },
-  feedbackText: { fontSize: 16, fontWeight: '600' },
-  explanationBlock: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-  },
-  explanationTitle: { fontSize: 14, fontWeight: '700', marginBottom: Spacing.sm },
-  explanationLoading: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: Spacing.sm },
-  explanationLoadingText: { fontSize: 14 },
-  explanationText: { fontSize: 14, lineHeight: 20 },
+  explanationTitle: { fontSize: 16, fontWeight: '700', marginBottom: Spacing.sm },
+  explanationLoading: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: Spacing.sm },
+  explanationLoadingText: { fontSize: 15 },
+  explanationError: { gap: 8 },
+  explanationErrorText: { fontSize: 15 },
+  retryBtn: { alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: Spacing.md, borderRadius: 8, borderWidth: 1 },
+  retryBtnText: { fontSize: 15, fontWeight: '600' },
+  explanationText: { fontSize: 15, lineHeight: 22 },
+
   nextBtn: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    paddingVertical: 16, borderRadius: 12,
   },
   nextBtnText: { fontSize: 17, fontWeight: '600' },
+
+  resultContent: { padding: Spacing.lg, paddingTop: Spacing.xl, alignItems: 'center' },
+  resultCard: {
+    padding: Spacing.xl, borderRadius: BorderRadius.xl, borderWidth: 1,
+    alignItems: 'center', marginBottom: Spacing.lg, width: '100%',
+  },
+  resultTitle: { fontSize: 18, fontWeight: '600', marginBottom: Spacing.sm },
+  resultScore: { fontSize: 32, fontWeight: '700', marginBottom: Spacing.sm },
+  resultPuan: { fontSize: 20, fontWeight: '700' },
+  primaryBtn: {
+    paddingVertical: 14, paddingHorizontal: Spacing.xl, borderRadius: BorderRadius.md,
+    alignSelf: 'stretch', alignItems: 'center',
+  },
+  primaryBtnText: { fontSize: 17, fontWeight: '700' },
+  outlineBtn: {
+    paddingVertical: 14, paddingHorizontal: Spacing.xl, borderRadius: BorderRadius.md,
+    borderWidth: 1, marginTop: Spacing.md, alignSelf: 'stretch', alignItems: 'center',
+  },
+  outlineBtnText: { fontSize: 17, fontWeight: '600' },
 });

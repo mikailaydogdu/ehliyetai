@@ -62,7 +62,7 @@ export default function TabLayout() {
           title: 'EhliyetAI',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? 'chat' : 'chat-outline'}
+              name={focused ? 'pencil-box' : 'pencil-box-outline'}
               size={size ?? 24}
               color={color}
             />
