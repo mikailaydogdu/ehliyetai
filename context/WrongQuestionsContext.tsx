@@ -1,66 +1,66 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getWrongQuestions, setWrongQuestions as setWrongQuestionsStorage } from '@/lib/localStorage';
 import type { SavedWrongQuestion, WrongAnswer } from '@/types';
-
-const STORAGE_KEY = '@fersa_wrong_questions';
 
 interface WrongQuestionsContextType {
   wrongQuestions: SavedWrongQuestion[];
-  addWrongQuestions: (items: WrongAnswer[]) => void;
-  removeWrongQuestion: (questionId: string) => void;
+  addWrongQuestions: (items: WrongAnswer[]) => Promise<void>;
+  removeWrongQuestion: (questionId: string) => Promise<void>;
+  reloadFromStorage: () => Promise<void>;
 }
 
 const WrongQuestionsContext = createContext<WrongQuestionsContextType | null>(null);
 
-function isSavedWrongQuestion(w: WrongAnswer): w is SavedWrongQuestion {
-  return Array.isArray(w.options) && w.options.length >= 2;
+function toSavedWrongQuestion(item: WrongAnswer): SavedWrongQuestion {
+  return {
+    ...item,
+    options: item.options ?? [],
+  };
 }
 
 export function WrongQuestionsProvider({ children }: { children: React.ReactNode }) {
-  const [wrongQuestions, setWrongQuestions] = useState<SavedWrongQuestion[]>([]);
+  const [wrongQuestions, setWrongQuestionsState] = useState<SavedWrongQuestion[]>([]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        if (!raw) return;
-        try {
-          const parsed = JSON.parse(raw) as WrongAnswer[];
-          const valid = parsed.filter(isSavedWrongQuestion) as SavedWrongQuestion[];
-          setWrongQuestions(valid);
-        } catch (_) {}
-      })
-      .catch(() => {});
+    getWrongQuestions().then(setWrongQuestionsState);
   }, []);
 
   const addWrongQuestions = useCallback(
-    (items: WrongAnswer[]) => {
-      const withOptions = items.filter(isSavedWrongQuestion) as SavedWrongQuestion[];
-      if (withOptions.length === 0) return;
-      setWrongQuestions((prev) => {
-        const byId = new Map(prev.map((q) => [q.questionId, q]));
-        withOptions.forEach((q) => byId.set(q.questionId, q));
-        const next = Array.from(byId.values());
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-        return next;
-      });
+    async (items: WrongAnswer[]) => {
+      if (items.length === 0) return;
+      const saved = items.map(toSavedWrongQuestion);
+      const byId = new Map(wrongQuestions.map((q) => [q.questionId, q]));
+      saved.forEach((q) => byId.set(q.questionId, q));
+      const merged = Array.from(byId.values());
+      setWrongQuestionsState(merged);
+      await setWrongQuestionsStorage(merged);
     },
-    []
+    [wrongQuestions]
   );
 
   const removeWrongQuestion = useCallback(
-    (questionId: string) => {
-      setWrongQuestions((prev) => {
-        const next = prev.filter((q) => q.questionId !== questionId);
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-        return next;
-      });
+    async (questionId: string) => {
+      const filtered = wrongQuestions.filter((q) => q.questionId !== questionId);
+      setWrongQuestionsState(filtered);
+      await setWrongQuestionsStorage(filtered);
     },
-    []
+    [wrongQuestions]
   );
 
+  const reloadFromStorage = useCallback(async () => {
+    const list = await getWrongQuestions();
+    setWrongQuestionsState(list);
+  }, []);
+
+  const value: WrongQuestionsContextType = {
+    wrongQuestions,
+    addWrongQuestions,
+    removeWrongQuestion,
+    reloadFromStorage,
+  };
+
   return (
-    <WrongQuestionsContext.Provider
-      value={{ wrongQuestions, addWrongQuestions, removeWrongQuestion }}>
+    <WrongQuestionsContext.Provider value={value}>
       {children}
     </WrongQuestionsContext.Provider>
   );

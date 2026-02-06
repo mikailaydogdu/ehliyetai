@@ -4,6 +4,8 @@ export interface Lesson {
   id: string;
   order: number;
   title: string;
+  /** Kısa özet (bir cümle). */
+  summary?: string;
   content: string; // Konu anlatımı
   questions: Question[];
 }
@@ -18,6 +20,8 @@ export interface Question {
   explanation?: string;
   /** İşaret sorularında: tabela görseli kodu (örn. T-1a). Varsa quiz’te görsel gösterilir. */
   imageCode?: string;
+  /** Şık görselleri (4 elemanlı dizi; görsel yoksa undefined). */
+  optionImages?: (string | undefined)[];
 }
 
 export interface Category {
@@ -26,6 +30,8 @@ export interface Category {
   name: string;
   icon: string;
   description?: string; // Kategoriye tıklanınca gösterilen kısa açıklama
+  /** Kategori kısa özeti (konu anlatımı sayfasında üstte). */
+  summary?: string;
   lessons: Lesson[];
 }
 
@@ -36,6 +42,8 @@ export interface QuizResult {
   score: number;
   totalQuestions: number;
   wrongAnswers: WrongAnswer[];
+  /** Hangi sınav: "Günün Sınavı", "Tam Sınav 1", kategori adı vb. */
+  examLabel?: string;
 }
 
 export interface WrongAnswer {
@@ -49,6 +57,8 @@ export interface WrongAnswer {
   options?: string[];
   /** İşaret sorusu ise görsel kodu. */
   imageCode?: string;
+  /** Şık görselleri. */
+  optionImages?: (string | undefined)[];
 }
 
 /** Kaydedilmiş yanlış soru – tekrar çözme ekranında gösterilmek üzere options/imageCode ile. */

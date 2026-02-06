@@ -1,25 +1,30 @@
-import { useLocalSearchParams, router, useNavigation } from 'expo-router';
-import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { useContent } from '@/context/ContentContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, Spacing, BorderRadius } from '@/constants/theme';
-import { mockCategories } from '@/data/mockData';
 import {
-  generateQuestionsForCategory,
-  generateWrongExplanation,
-  type AIQuestion,
+    generateQuestionsForCategory,
+    generateWrongExplanation,
+    type AIQuestion,
 } from '@/lib/groq';
+import { getQuestionImageSource } from '@/data/tabelaImages';
+import { getIsaretQuestions } from '@/data/isaretSorulari';
+
+type CalismaQuestion = AIQuestion & { imageCode?: string };
 
 export default function CalismaCategoryScreen() {
   const { category, categoryName } = useLocalSearchParams<{
@@ -29,30 +34,55 @@ export default function CalismaCategoryScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
 
+  const { categories } = useContent();
   const displayName =
     categoryName ??
-    mockCategories.find((cat) => cat.id === category)?.name ??
+    categories.find((cat) => cat.id === category)?.name ??
     category;
 
-  const navigation = useNavigation();
-  useLayoutEffect(() => {
-    navigation.setOptions({ title: displayName });
-  }, [navigation, displayName]);
-
-  const [questions, setQuestions] = useState<AIQuestion[]>([]);
+  const [questions, setQuestions] = useState<CalismaQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
+  const [explanationError, setExplanationError] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
+  const LOADING_MESSAGES = [
+    'EhliyetAI soruları hazırlıyor…',
+    'Sorular oluşturuluyor…',
+    'Biraz daha bekleyin…',
+    'Neredeyse hazır…',
+  ];
+
+  useEffect(() => {
+    if (!loading) return;
+    setLoadingMessageIndex(0);
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const loadQuestions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await generateQuestionsForCategory(displayName);
-      setQuestions(list);
+      if (category === 'isaretler') {
+        const localList = getIsaretQuestions(10);
+        const list: CalismaQuestion[] = localList.map((q) => ({
+          soru: q.text,
+          siklar: q.options,
+          dogruIndex: q.correctIndex,
+          imageCode: q.imageCode,
+        }));
+        setQuestions(list);
+      } else {
+        const list = await generateQuestionsForCategory(displayName);
+        setQuestions(list);
+      }
       setCurrentIndex(0);
       setSelectedIndex(null);
       setExplanation(null);
@@ -61,7 +91,7 @@ export default function CalismaCategoryScreen() {
     } finally {
       setLoading(false);
     }
-  }, [displayName]);
+  }, [displayName, category]);
 
   useEffect(() => {
     loadQuestions();
@@ -85,18 +115,38 @@ export default function CalismaCategoryScreen() {
         q.dogruIndex
       );
       setExplanation(text);
+      setExplanationError(false);
     } catch (e) {
-      setExplanation(
-        e instanceof Error ? e.message : 'Açıklama alınamadı.'
-      );
+      setExplanation(null);
+      setExplanationError(true);
     } finally {
       setLoadingExplanation(false);
     }
   };
 
+  const retryExplanation = useCallback(async () => {
+    if (!q || selectedIndex === null) return;
+    setLoadingExplanation(true);
+    setExplanationError(false);
+    try {
+      const text = await generateWrongExplanation(
+        q.soru,
+        q.siklar,
+        selectedIndex,
+        q.dogruIndex
+      );
+      setExplanation(text);
+    } catch (e) {
+      setExplanationError(true);
+    } finally {
+      setLoadingExplanation(false);
+    }
+  }, [q, selectedIndex]);
+
   const handleNext = () => {
     setSelectedIndex(null);
     setExplanation(null);
+    setExplanationError(false);
     if (isLast) {
       Alert.alert(
         'Tamamlandı',
@@ -113,11 +163,11 @@ export default function CalismaCategoryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={c.primary} />
           <Text style={[styles.loadingText, { color: c.textSecondary }]}>
-            Sorular hazırlanıyor…
+            {LOADING_MESSAGES[loadingMessageIndex]}
           </Text>
         </View>
       </SafeAreaView>
@@ -126,10 +176,13 @@ export default function CalismaCategoryScreen() {
 
   if (error || questions.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
         <View style={styles.centered}>
           <MaterialIcons name="error-outline" size={48} color={c.error} />
-          <Text style={[styles.errorText, { color: c.text }]}>{error ?? 'Soru bulunamadı.'}</Text>
+          <Text style={[styles.errorTitle, { color: c.text }]}>Bir hata oluştu</Text>
+          <Text style={[styles.errorText, { color: c.textSecondary }]}>
+            Sorular yüklenirken bir sorun yaşandı. Lütfen tekrar deneyin.
+          </Text>
           <TouchableOpacity
             style={[styles.retryBtn, { backgroundColor: c.primary }]}
             onPress={loadQuestions}
@@ -145,15 +198,21 @@ export default function CalismaCategoryScreen() {
   const showExplanation = selectedIndex !== null && !correct && (explanation !== null || loadingExplanation);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        <Text style={[styles.progress, { color: c.textSecondary }]}>
-          Soru {currentIndex + 1} / {total}
-        </Text>
         <View style={[styles.questionBlock, { backgroundColor: c.card, borderColor: c.border }]}>
+          {q.imageCode && getQuestionImageSource(q.imageCode) && (
+            <View style={styles.signImageWrap}>
+              <Image
+                source={getQuestionImageSource(q.imageCode)!}
+                style={styles.signImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
           <Text style={[styles.questionText, { color: c.text }]}>{q.soru}</Text>
           <View style={styles.options}>
             {q.siklar.map((opt, idx) => {
@@ -205,14 +264,32 @@ export default function CalismaCategoryScreen() {
           <View style={[styles.explanationBlock, { backgroundColor: c.card, borderColor: c.border }]}>
             <Text style={[styles.explanationTitle, { color: c.primary }]}>Açıklama</Text>
             {loadingExplanation ? (
-              <ActivityIndicator size="small" color={c.primary} style={styles.explanationLoader} />
+              <View style={styles.explanationLoading}>
+                <ActivityIndicator size="small" color={c.primary} />
+                <Text style={[styles.explanationLoadingText, { color: c.textSecondary }]}>
+                  EhliyetAI düşünüyor…
+                </Text>
+              </View>
+            ) : explanationError ? (
+              <>
+                <Text style={[styles.explanationText, { color: c.textSecondary }]}>
+                  Açıklama yüklenirken bir sorun yaşandı. Tekrar denemek ister misin?
+                </Text>
+                <TouchableOpacity
+                  style={[styles.retryBtn, { backgroundColor: c.primary, marginTop: Spacing.md }]}
+                  onPress={retryExplanation}
+                  activeOpacity={0.8}>
+                  <Text style={[styles.retryBtnText, { color: c.primaryContrast }]}>Tekrar dene</Text>
+                </TouchableOpacity>
+              </>
             ) : (
               <Text style={[styles.explanationText, { color: c.text }]}>{explanation}</Text>
             )}
           </View>
         )}
 
-        {(selectedIndex !== null) && (
+        {(selectedIndex !== null) &&
+          (correct || (!loadingExplanation && (explanation !== null || explanationError))) && (
           <TouchableOpacity
             style={[styles.nextBtn, { backgroundColor: c.primary }]}
             onPress={handleNext}
@@ -231,12 +308,14 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
   loadingText: { marginTop: Spacing.md },
-  errorText: { marginTop: Spacing.md, textAlign: 'center' },
+  errorTitle: { fontSize: 18, fontWeight: '700', marginTop: Spacing.md },
+  errorText: { marginTop: Spacing.sm, textAlign: 'center', paddingHorizontal: Spacing.lg },
   retryBtn: { marginTop: Spacing.lg, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10 },
   retryBtnText: { fontSize: 16, fontWeight: '600' },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.xl },
-  progress: { fontSize: 13, marginBottom: Spacing.sm },
+  signImageWrap: { alignItems: 'center', marginBottom: Spacing.md },
+  signImage: { width: 120, height: 120 },
   questionBlock: {
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
@@ -272,7 +351,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   explanationTitle: { fontSize: 14, fontWeight: '700', marginBottom: Spacing.sm },
-  explanationLoader: { alignSelf: 'center', marginVertical: Spacing.sm },
+  explanationLoading: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: Spacing.sm },
+  explanationLoadingText: { fontSize: 14 },
   explanationText: { fontSize: 14, lineHeight: 20 },
   nextBtn: {
     paddingVertical: 16,

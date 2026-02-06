@@ -1,53 +1,65 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const EXAM_DATE_KEY = '@fersa_exam_date';
+import { getExamDate, setExamDate as setExamDateStorage } from '@/lib/localStorage';
 
 interface ExamDateContextType {
   examDate: string | null;
   setExamDate: (date: string | null) => Promise<void>;
   daysLeft: number | null;
+  reloadFromStorage: () => Promise<void>;
 }
 
 const ExamDateContext = createContext<ExamDateContextType | null>(null);
+
+function daysBetween(from: string, to: string): number {
+  const d1 = new Date(from);
+  const d2 = new Date(to);
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  return Math.floor((d2.getTime() - d1.getTime()) / (24 * 60 * 60 * 1000));
+}
 
 export function ExamDateProvider({ children }: { children: React.ReactNode }) {
   const [examDate, setExamDateState] = useState<string | null>(null);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(EXAM_DATE_KEY).then((stored) => {
-      if (stored) setExamDateState(stored);
+    getExamDate().then((date) => {
+      setExamDateState(date);
+      if (date) {
+        const today = new Date().toISOString().slice(0, 10);
+        setDaysLeft(daysBetween(today, date));
+      } else {
+        setDaysLeft(null);
+      }
     });
   }, []);
 
-  useEffect(() => {
-    if (!examDate) {
-      setDaysLeft(null);
-      return;
-    }
-    const exam = new Date(examDate);
-    exam.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((exam.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    setDaysLeft(diff);
-  }, [examDate]);
-
   const setExamDate = useCallback(async (date: string | null) => {
+    await setExamDateStorage(date);
+    setExamDateState(date);
     if (date) {
-      await AsyncStorage.setItem(EXAM_DATE_KEY, date);
-      setExamDateState(date);
+      const today = new Date().toISOString().slice(0, 10);
+      setDaysLeft(daysBetween(today, date));
     } else {
-      await AsyncStorage.removeItem(EXAM_DATE_KEY);
-      setExamDateState(null);
+      setDaysLeft(null);
     }
   }, []);
 
+  const reloadFromStorage = useCallback(async () => {
+    const date = await getExamDate();
+    setExamDateState(date);
+    if (date) {
+      const today = new Date().toISOString().slice(0, 10);
+      setDaysLeft(daysBetween(today, date));
+    } else {
+      setDaysLeft(null);
+    }
+  }, []);
+
+  const value: ExamDateContextType = { examDate, setExamDate, daysLeft, reloadFromStorage };
+
   return (
-    <ExamDateContext.Provider value={{ examDate, setExamDate, daysLeft }}>
-      {children}
-    </ExamDateContext.Provider>
+    <ExamDateContext.Provider value={value}>{children}</ExamDateContext.Provider>
   );
 }
 

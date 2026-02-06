@@ -1,120 +1,136 @@
 import React from 'react';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View, Text, Pressable, Alert, useWindowDimensions } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, View, Text, Pressable, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
+import { useExamDate } from '@/context/ExamDateContext';
+import { useWrongQuestions } from '@/context/WrongQuestionsContext';
+import { useStats } from '@/context/StatsContext';
+import { clearAllProfileData } from '@/lib/localStorage';
+
+const APP_LOGO = require('@/assets/images/ehliyetai.png');
+const APP_NAME = 'EhliyetAI';
 
 type GridItem = {
   id: string;
   label: string;
   icon: keyof typeof MaterialIcons.glyphMap;
   path: string;
-  danger?: boolean;
 };
 
 const GRID_ITEMS: GridItem[] = [
-  { id: 'sifre', label: 'Şifre Değiştir', icon: 'lock', path: '/sifre-degistir' },
   { id: 'istatistikler', label: 'İstatistikler', icon: 'bar-chart', path: '/istatistikler' },
   { id: 'yardim', label: 'Yardım', icon: 'help-outline', path: '/yardim' },
-  { id: 'sil', label: 'Hesap Sil', icon: 'delete-outline', path: '', danger: true },
+  { id: 'yanlis', label: 'Yanlış Yaptığım Sorular', icon: 'assignment', path: '/yanlis-sorular' },
+  { id: 'hakkinda', label: 'Uygulama Hakkında', icon: 'info', path: '/uygulama-hakkinda' },
 ];
 
 export default function ProfilScreen() {
-  const { width } = useWindowDimensions();
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
-  const { user, deleteAccount } = useAuth();
-  const gap = Spacing.md;
-  const cardSize = (width - Spacing.lg * 2 - gap) / 2;
+  const { user, reloadFromStorage: reloadAuth } = useAuth();
+  const { themePreference, setThemePreference } = useTheme();
+  const { reloadFromStorage: reloadExamDate } = useExamDate();
+  const { reloadFromStorage: reloadWrongQuestions } = useWrongQuestions();
+  const { reloadFromStorage: reloadStats } = useStats();
+  const isDark = colorScheme === 'dark';
 
-  const handleHesapSil = () => {
+  const onMenuPress = (item: GridItem) => {
+    if (item.path) router.push(item.path as never);
+  };
+
+  const toggleDarkMode = (value: boolean) => {
+    setThemePreference(value ? 'dark' : 'light');
+  };
+
+  const handleProfilVerileriSil = () => {
     Alert.alert(
-      'Hesabı Sil',
-      'Hesabınız silinecek ve çıkış yapacaksınız. Emin misiniz?',
+      'Profil verilerini sil',
+      'Ad, sınav tarihi, yanlış sorular ve sınav sonuçları silinecek. Emin misiniz?',
       [
         { text: 'İptal', style: 'cancel' },
         {
           text: 'Sil',
           style: 'destructive',
           onPress: async () => {
-            await deleteAccount();
-            router.replace('/giris');
+            await clearAllProfileData();
+            await Promise.all([reloadAuth(), reloadExamDate(), reloadWrongQuestions(), reloadStats()]);
           },
         },
       ]
     );
   };
 
-  const onGridPress = (item: GridItem) => {
-    if (item.danger) handleHesapSil();
-    else if (item.path) router.push(item.path as never);
-  };
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        {user && (
+        <View style={styles.appBlock}>
+          <Image source={APP_LOGO} style={styles.appLogo} resizeMode="contain" />
+          <Text style={[styles.appName, { color: c.text }]}>{APP_NAME}</Text>
           <Pressable
-            style={({ pressed }) => [
-              styles.userBlock,
-              { backgroundColor: c.background },
-              pressed && { opacity: 0.9 },
-            ]}
+            style={({ pressed }) => [styles.profilEditRow, pressed && { opacity: 0.8 }]}
             onPress={() => router.push('/profil-guncelleme' as never)}>
-            <View style={[styles.userAvatar, { backgroundColor: c.selectedBg }]}>
-              <Text style={[styles.userAvatarText, { color: c.text }]}>
-                {user.name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <Text style={[styles.userName, { color: c.text }]} numberOfLines={1}>
-              {user.name}
+            <Text style={[styles.profilEditLabel, { color: c.textSecondary }]}>
+              {user?.name ?? 'Kullanıcı'}
             </Text>
-            <Text style={[styles.userEmail, { color: c.textSecondary }]} numberOfLines={1}>
-              {user.email}
-            </Text>
+            <MaterialIcons name="edit" size={18} color={c.textSecondary} />
           </Pressable>
-        )}
+        </View>
 
-        <View style={[styles.grid, { gap }]}>
+        <View style={[styles.darkModeRow, { borderColor: c.border, backgroundColor: c.card }, getCardShadow(c)]}>
+          <MaterialIcons name="nights-stay" size={24} color={c.primary} />
+          <Text style={[styles.darkModeLabel, { color: c.text }]}>Karanlık mod</Text>
+          <Switch
+            value={isDark}
+            onValueChange={toggleDarkMode}
+            trackColor={{ false: c.border, true: c.primary + '80' }}
+            thumbColor={isDark ? c.primary : c.card}
+            accessibilityLabel="Karanlık mod"
+            accessibilityHint={isDark ? 'Açık moda geçmek için dokunun' : 'Karanlık moda geçmek için dokunun'}
+          />
+        </View>
+
+        <View style={styles.menuList}>
           {GRID_ITEMS.map((item) => (
             <Pressable
               key={item.id}
               style={({ pressed }) => [
-                styles.gridCard,
+                styles.menuRow,
                 {
-                  ...getCardShadow(c),
-                  width: cardSize,
                   borderColor: c.border,
-                  borderRadius: BorderRadius.xl,
-                  borderWidth: 1,
                   backgroundColor: pressed ? c.selectedBg : c.card,
                 },
+                getCardShadow(c),
+                pressed && { opacity: 0.9 },
               ]}
-              onPress={() => onGridPress(item)}>
-              <MaterialIcons
-                name={item.icon}
-                size={28}
-                color={item.danger ? c.error : c.text}
-                style={styles.gridIcon}
-              />
-              <Text
-                style={[
-                  styles.gridLabel,
-                  { color: item.danger ? c.error : c.text },
-                ]}
-                numberOfLines={1}>
-                {item.label}
-              </Text>
+              onPress={() => onMenuPress(item)}>
+              <MaterialIcons name={item.icon} size={24} color={c.primary} />
+              <Text style={[styles.menuLabel, { color: c.text }]}>{item.label}</Text>
+              <MaterialIcons name="chevron-right" size={22} color={c.textSecondary} />
             </Pressable>
           ))}
         </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.clearRow,
+            { borderColor: c.border, backgroundColor: c.card },
+            getCardShadow(c),
+            pressed && { opacity: 0.8 },
+          ]}
+          onPress={handleProfilVerileriSil}>
+          <MaterialIcons name="delete-outline" size={24} color={c.error} />
+          <Text style={[styles.clearLabel, { color: c.error }]}>Profil verileri sil</Text>
+          <MaterialIcons name="chevron-right" size={22} color={c.textSecondary} />
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -124,33 +140,56 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.xl },
-  userBlock: {
+  appBlock: {
     alignItems: 'center',
-    paddingVertical: Spacing.xl,
-    marginBottom: Spacing.lg,
-  },
-  userAvatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
     marginBottom: Spacing.md,
   },
-  userAvatarText: { fontSize: 32, fontWeight: '700' },
-  userName: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  userEmail: { fontSize: 15 },
-  grid: {
+  appLogo: {
+    width: 96,
+    height: 96,
+    marginBottom: Spacing.sm,
+  },
+  appName: { fontSize: 24, fontWeight: '700', marginBottom: Spacing.sm },
+  profilEditRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  gridCard: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.sm,
-    minHeight: 110,
+    gap: 6,
   },
-  gridIcon: { marginBottom: Spacing.sm },
-  gridLabel: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  profilEditLabel: { fontSize: 15 },
+  menuList: { gap: Spacing.sm, marginBottom: Spacing.md },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+  },
+  menuLabel: { flex: 1, fontSize: 16, fontWeight: '500' },
+  darkModeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  darkModeLabel: { flex: 1, fontSize: 16, fontWeight: '500' },
+  clearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  clearLabel: { flex: 1, fontSize: 16, fontWeight: '600' },
 });

@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ProfilGuncellemeScreen() {
@@ -21,7 +21,6 @@ export default function ProfilGuncellemeScreen() {
   const c = Colors[colorScheme ?? 'light'];
   const { user, updateUser } = useAuth();
   const [name, setName] = useState(user?.name ?? '');
-  const [email, setEmail] = useState(user?.email ?? '');
   const [error, setError] = useState('');
 
   const handleSave = async () => {
@@ -30,12 +29,8 @@ export default function ProfilGuncellemeScreen() {
       setError('Ad soyad girin');
       return;
     }
-    if (!email.trim()) {
-      setError('E-posta girin');
-      return;
-    }
     try {
-      await updateUser(name.trim(), email.trim());
+      await updateUser(name.trim());
       router.back();
     } catch {
       setError('Güncellenemedi');
@@ -45,7 +40,11 @@ export default function ProfilGuncellemeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          accessibilityLabel="Geri"
+          accessibilityHint="Önceki sayfaya dön">
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: c.text }]}>Profil Güncelleme</Text>
@@ -65,16 +64,6 @@ export default function ProfilGuncellemeScreen() {
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
-            />
-            <Text style={[styles.label, { color: c.textSecondary }]}>E-posta</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: c.background, borderColor: c.border, color: c.text }]}
-              placeholder="ornek@email.com"
-              placeholderTextColor={c.textSecondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
             />
             {error ? <Text style={[styles.error, { color: c.error }]}>{error}</Text> : null}
             <Pressable style={[styles.button, { backgroundColor: c.primary }]} onPress={handleSave} activeOpacity={0.8}>
@@ -96,7 +85,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderBottomWidth: 1,
   },
-  backBtn: { padding: 4, marginRight: Spacing.sm },
+  backBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', flex: 1 },
   keyboard: { flex: 1 },
   scroll: { flex: 1 },

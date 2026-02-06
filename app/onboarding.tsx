@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -10,74 +11,76 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const LOGO_IMAGE = require('../assets/images/ehliyetai.png');
 
 const SLIDES = [
   {
     id: '1',
-    title: 'B Ehliyet Sınavına Hazırlan',
-    subtitle: 'Çıkmış sorular ve kategorilere göre test çözerek sınava hazırlan.',
+    title: 'EhliyetAI\'e Hoş Geldin',
+    desc: 'B sınıfı ehliyet sınavına kategorilere göre test çözerek veya 50 soruluk tam sınav simülasyonu ile hazırlan.',
+    showLogo: true,
     icon: 'school' as const,
   },
   {
     id: '2',
-    title: 'Yanlışlarını Tekrarla',
-    subtitle: 'Yanlış yaptığın soruları kaydet, tekrar çöz ve eksiklerini kapat.',
-    icon: 'assignment' as const,
-  },
-  {
-    id: '3',
-    title: 'Sınav Simülasyonu',
-    subtitle: 'Gerçek sınav formatında 50 soru çöz, süre tut ve kendini test et.',
-    icon: 'quiz' as const,
+    title: 'Nasıl Çalışır?',
+    desc: 'Yanlış yaptığın sorular otomatik kaydedilir. En az 3 sınav tamamladıktan sonra AI ile ek soru üretebilirsin.',
+    showLogo: false,
+    icon: 'psychology' as const,
   },
 ];
 
 export default function OnboardingScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
-  const { completeOnboarding } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const { setHasCompletedOnboarding } = useAuth();
+  const [page, setPage] = useState(0);
+  const listRef = useRef<FlatList>(null);
 
-  const onNext = () => {
-    if (currentIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
-      setCurrentIndex(currentIndex + 1);
+  const onNext = async () => {
+    if (page < SLIDES.length - 1) {
+      listRef.current?.scrollToIndex({ index: page + 1 });
+      setPage(page + 1);
     } else {
-      completeOnboarding();
-      router.replace('/giris');
+      await setHasCompletedOnboarding(true);
+      router.replace('/(tabs)');
     }
   };
 
-  const onScroll = (e: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / width);
-    setCurrentIndex(index);
-  };
+  const renderItem = ({ item }: { item: (typeof SLIDES)[0] }) => (
+    <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
+      {item.showLogo ? (
+        <View style={styles.logoWrap}>
+          <Image source={LOGO_IMAGE} style={styles.logoImage} resizeMode="contain" />
+        </View>
+      ) : (
+        <View style={[styles.iconWrap, { backgroundColor: c.selectedBg }]}>
+          <MaterialIcons name={item.icon} size={56} color={c.primary} />
+        </View>
+      )}
+      <Text style={[styles.title, { color: c.text }]}>{item.title}</Text>
+      <Text style={[styles.desc, { color: c.textSecondary }]}>{item.desc}</Text>
+    </View>
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top', 'bottom']}>
       <FlatList
-        ref={flatListRef}
+        ref={listRef}
         data={SLIDES}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onScroll}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={[styles.slide, { width }]}>
-            <View style={[styles.iconWrap, { backgroundColor: c.primary + '18' }]}>
-              <MaterialIcons name={item.icon} size={64} color={c.primary} />
-            </View>
-            <Text style={[styles.title, { color: c.text }]}>{item.title}</Text>
-            <Text style={[styles.subtitle, { color: c.textSecondary }]}>{item.subtitle}</Text>
-          </View>
-        )}
+        onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH))}
       />
       <View style={styles.footer}>
         <View style={styles.dots}>
@@ -86,19 +89,19 @@ export default function OnboardingScreen() {
               key={i}
               style={[
                 styles.dot,
-                { backgroundColor: i === currentIndex ? c.primary : c.border },
+                { backgroundColor: i === page ? c.primary : c.border },
               ]}
             />
           ))}
         </View>
         <Pressable
-          style={[styles.button, { backgroundColor: c.primary }]}
+          style={[styles.btn, { backgroundColor: c.primary }]}
           onPress={onNext}
-          activeOpacity={0.8}>
-          <Text style={[styles.buttonText, { color: c.primaryContrast }]}>
-            {currentIndex === SLIDES.length - 1 ? 'Başla' : 'Devam'}
+          accessibilityLabel={page < SLIDES.length - 1 ? 'İleri' : 'Başla'}
+          accessibilityRole="button">
+          <Text style={[styles.btnText, { color: c.primaryContrast }]}>
+            {page < SLIDES.length - 1 ? 'İleri' : 'Başla'}
           </Text>
-          <MaterialIcons name="arrow-forward" size={22} color={c.primaryContrast} />
         </Pressable>
       </View>
     </SafeAreaView>
@@ -109,10 +112,18 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   slide: {
     flex: 1,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xl * 2,
+    alignItems: 'center',
+  },
+  logoWrap: {
+    width: 160,
+    height: 160,
+    marginBottom: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
   },
+  logoImage: { width: 160, height: 160 },
   iconWrap: {
     width: 120,
     height: 120,
@@ -122,38 +133,36 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
-  subtitle: {
+  desc: {
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
+    paddingHorizontal: Spacing.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+    gap: Spacing.lg,
   },
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
+  btn: {
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
+    alignItems: 'center',
   },
-  buttonText: { fontSize: 17, fontWeight: '600' },
+  btnText: { fontSize: 16, fontWeight: '600' },
 });

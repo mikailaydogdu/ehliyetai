@@ -51,5 +51,8 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Firebase export
+*-export*.json
+
 # Misc
 app-example

@@ -1,106 +1,64 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const ONBOARDING_KEY = '@fersa_onboarding_done';
-const USER_KEY = '@fersa_user';
+import { getOnboardingDone, getProfileName, setOnboardingDone, setProfileName } from '@/lib/localStorage';
 
 export interface User {
-  email: string;
-  name: string;
+  uid: string;
+  email: string | null;
+  name: string | null;
 }
 
 interface AuthContextType {
-  hasCompletedOnboarding: boolean | null;
   user: User | null;
   isLoading: boolean;
-  completeOnboarding: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateUser: (name: string, email: string) => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  hasCompletedOnboarding: boolean | null;
+  updateUser: (name: string) => Promise<void>;
+  setHasCompletedOnboarding: (value: boolean) => Promise<void>;
+  reloadFromStorage: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const LOCAL_UID = 'local';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState<boolean | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [onboarding, userJson] = await Promise.all([
-          AsyncStorage.getItem(ONBOARDING_KEY),
-          AsyncStorage.getItem(USER_KEY),
-        ]);
-        setHasCompletedOnboardingState(onboarding === 'true');
-        if (userJson) {
-          const parsed = JSON.parse(userJson) as User;
-          setUser(parsed);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setHasCompletedOnboardingState(false);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+    Promise.all([getOnboardingDone(), getProfileName()]).then(([onboarding, name]) => {
+      setHasCompletedOnboardingState(onboarding);
+      setUser({ uid: LOCAL_UID, email: null, name: name ?? 'Kullanıcı' });
+      setIsLoading(false);
+    });
   }, []);
 
-  const completeOnboarding = useCallback(async () => {
-    await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-    setHasCompletedOnboardingState(true);
+  const setHasCompletedOnboarding = useCallback(async (value: boolean) => {
+    await setOnboardingDone(value);
+    setHasCompletedOnboardingState(value);
   }, []);
 
-  const login = useCallback(async (email: string, _password: string) => {
-    const userData: User = { email, name: email.split('@')[0] ?? 'Kullanıcı' };
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setUser(userData);
+  const updateUser = useCallback(async (name: string) => {
+    const trimmed = name.trim() || 'Kullanıcı';
+    await setProfileName(trimmed);
+    setUser((prev) => (prev ? { ...prev, name: trimmed } : { uid: LOCAL_UID, email: null, name: trimmed }));
   }, []);
 
-  const register = useCallback(async (name: string, email: string, _password: string) => {
-    const userData: User = { email, name };
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setUser(userData);
+  const reloadFromStorage = useCallback(async () => {
+    const name = await getProfileName();
+    setUser({ uid: LOCAL_UID, email: null, name: name ?? 'Kullanıcı' });
   }, []);
 
-  const logout = useCallback(async () => {
-    await AsyncStorage.removeItem(USER_KEY);
-    setUser(null);
-  }, []);
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    hasCompletedOnboarding,
+    updateUser,
+    setHasCompletedOnboarding,
+    reloadFromStorage,
+  };
 
-  const updateUser = useCallback(async (name: string, email: string) => {
-    const userData: User = { email, name };
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setUser(userData);
-  }, []);
-
-  const deleteAccount = useCallback(async () => {
-    await AsyncStorage.multiRemove([USER_KEY, ONBOARDING_KEY]);
-    setUser(null);
-    setHasCompletedOnboardingState(false);
-  }, []);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        hasCompletedOnboarding,
-        user,
-        isLoading,
-        completeOnboarding,
-        login,
-        register,
-        logout,
-        updateUser,
-        deleteAccount,
-      }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

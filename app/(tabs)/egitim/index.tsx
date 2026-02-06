@@ -6,7 +6,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
-import { mockCategories } from '@/data/mockData';
+import { useContent } from '@/context/ContentContext';
 
 const CATEGORY_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   car: 'directions-car',
@@ -21,11 +21,19 @@ const CATEGORY_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
 export default function EgitimIndexScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
+  const { categories } = useContent();
+  const educationCategories = categories.filter((cat) => (cat.lessons?.length ?? 0) > 0 || cat.id === 'isaretler');
 
-  const educationCategories = mockCategories.filter((cat) => cat.id === 'isaretler');
+  const handleCategoryPress = (cat: (typeof categories)[0]) => {
+    if (cat.id === 'isaretler') {
+      router.push('/egitim/isaretler' as never);
+    } else {
+      router.push({ pathname: '/egitim/bos', params: { categoryId: cat.id, name: cat.name } } as never);
+    }
+  };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -35,14 +43,15 @@ export default function EgitimIndexScreen() {
             key={cat.id}
             style={[
               styles.card,
-            {
-              ...getCardShadow(c),
-              backgroundColor: c.card,
-              borderColor: c.border,
-              borderRadius: BorderRadius.xl,
-            },
+              {
+                ...getCardShadow(c),
+                backgroundColor: c.card,
+                borderColor: c.border,
+                borderRadius: BorderRadius.xl,
+                borderWidth: 1,
+              },
             ]}
-            onPress={() => router.push('/egitim/isaretler' as never)}
+            onPress={() => handleCategoryPress(cat)}
             activeOpacity={0.7}>
             <View style={[styles.iconWrap, { backgroundColor: c.selectedBg }]}>
               <MaterialIcons
@@ -56,7 +65,9 @@ export default function EgitimIndexScreen() {
               <Text style={[styles.cardDescription, { color: c.textSecondary }]} numberOfLines={2}>
                 {cat.description}
               </Text>
-              <Text style={[styles.cardAction, { color: c.text }]}>İşaretleri görüntüle →</Text>
+              <Text style={[styles.cardAction, { color: c.text }]}>
+                {cat.id === 'isaretler' ? 'İşaretleri görüntüle →' : 'Konu anlatımı ve özetler →'}
+              </Text>
             </View>
           </TouchableOpacity>
         ))}

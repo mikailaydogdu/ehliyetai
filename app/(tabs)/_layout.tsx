@@ -1,87 +1,44 @@
 import AppHeader from '@/components/AppHeader';
-import MenuModal from '@/components/MenuModal';
-import { Colors } from '@/constants/theme';
-import { MenuProvider } from '@/context/MenuContext';
+import { BorderRadius, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs } from 'expo-router';
-import React, { useEffect } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-
-const springConfig = { damping: 14, stiffness: 180 };
-
-function AnimatedTabIcon({
-  focused,
-  color,
-  size,
-  activeName,
-  inactiveName,
-}: {
-  focused: boolean;
-  color: string;
-  size: number;
-  activeName: keyof typeof MaterialCommunityIcons.glyphMap;
-  inactiveName: keyof typeof MaterialCommunityIcons.glyphMap;
-}) {
-  const scale = useSharedValue(focused ? 1.12 : 1);
-
-  useEffect(() => {
-    scale.value = withSpring(focused ? 1.12 : 1, springConfig);
-  }, [focused, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <MaterialCommunityIcons
-        name={focused ? activeName : inactiveName}
-        size={size ?? 24}
-        color={color}
-      />
-    </Animated.View>
-  );
-}
+import React from 'react';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
 
   return (
-    <MenuProvider>
-      <Tabs
+    <Tabs
         screenOptions={{
           tabBarActiveTintColor: c.primary,
           tabBarInactiveTintColor: c.tabIconDefault,
           headerShown: true,
           header: () => <AppHeader />,
           tabBarStyle: {
-          backgroundColor: c.card,
-          borderTopWidth: 1,
-          borderTopColor: c.border,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '500' },
-        tabBarShowLabel: true,
-        headerShadowVisible: false,
-      }}>
+            backgroundColor: c.card,
+            borderTopWidth: 1,
+            borderTopColor: c.border,
+            borderTopLeftRadius: BorderRadius.xl,
+            borderTopRightRadius: BorderRadius.xl,
+            overflow: 'hidden',
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          tabBarLabelStyle: { fontSize: 12, fontWeight: '500' },
+          tabBarShowLabel: true,
+          headerShadowVisible: false,
+        }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Anasayfa',
           tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              color={color}
+            <MaterialCommunityIcons
+              name={focused ? 'home' : 'home-outline'}
               size={size ?? 24}
-              activeName="home"
-              inactiveName="home-outline"
+              color={color}
             />
           ),
         }}
@@ -89,14 +46,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="egitim"
         options={{
-          title: 'Eğitim',
+          title: 'Notlar',
           tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              color={color}
+            <MaterialCommunityIcons
+              name={focused ? 'book-open' : 'book-open-outline'}
               size={size ?? 24}
-              activeName="book-open"
-              inactiveName="book-open-outline"
+              color={color}
             />
           ),
         }}
@@ -104,14 +59,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="calisma"
         options={{
-          title: 'Chat',
+          title: 'EhliyetAI',
           tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              color={color}
+            <MaterialCommunityIcons
+              name={focused ? 'chat' : 'chat-outline'}
               size={size ?? 24}
-              activeName="chat"
-              inactiveName="chat-outline"
+              color={color}
             />
           ),
         }}
@@ -121,12 +74,10 @@ export default function TabLayout() {
         options={{
           title: 'Sınav',
           tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              color={color}
+            <MaterialCommunityIcons
+              name={focused ? 'clipboard-text' : 'clipboard-text-outline'}
               size={size ?? 24}
-              activeName="clipboard-text"
-              inactiveName="clipboard-text-outline"
+              color={color}
             />
           ),
         }}
@@ -136,18 +87,14 @@ export default function TabLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              color={color}
+            <MaterialCommunityIcons
+              name={focused ? 'account' : 'account-outline'}
               size={size ?? 24}
-              activeName="account"
-              inactiveName="account-outline"
+              color={color}
             />
           ),
         }}
       />
       </Tabs>
-      <MenuModal />
-    </MenuProvider>
   );
 }

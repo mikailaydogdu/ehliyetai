@@ -4,21 +4,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, Spacing } from '@/constants/theme';
-import { useMenu } from '@/context/MenuContext';
+import { Colors, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
 
 const TITLE_MAP: Record<string, string> = {
   index: 'Anasayfa',
-  egitim: 'Eğitim',
-  calisma: 'Chat',
+  egitim: 'Notlar',
+  calisma: 'EhliyetAI',
   sinav: 'Sınav',
   profil: 'Profil',
 };
 
-/** İç ekranlar (stack): pathname segment'ine göre başlık */
+/** Eğitim stack iç ekranları */
 const NESTED_TITLE_MAP: Record<string, string> = {
   isaretler: 'Trafik İşaretleri',
-  bos: 'Eğitim',
+  bos: 'Notlar',
+};
+
+/** EhliyetAI kategori ekranları */
+const CALISMA_TITLE_MAP: Record<string, string> = {
+  karisik: 'Karışık',
+  motor: 'Motor',
+  trafik: 'Trafik ve Çevre',
+  ilkyardim: 'İlk Yardım',
+  trafikadabi: 'Trafik Adabı',
+  kurallar: 'Kurallar',
+  isaretler: 'İşaretler',
+  bakim: 'Araç Tekniği',
 };
 
 function getTitle(pathname: string): string {
@@ -27,6 +38,9 @@ function getTitle(pathname: string): string {
   const base = segments[0] || 'index';
   if (segments.length > 1) {
     const nested = segments[1];
+    if (base === 'calisma') {
+      return CALISMA_TITLE_MAP[nested] ?? nested.charAt(0).toUpperCase() + nested.slice(1);
+    }
     return NESTED_TITLE_MAP[nested] ?? TITLE_MAP[base] ?? 'B Ehliyet';
   }
   return TITLE_MAP[base] ?? 'B Ehliyet';
@@ -41,19 +55,24 @@ export default function AppHeader() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const pathname = usePathname();
-  const { open } = useMenu();
   const nested = isNestedScreen(pathname);
   const title = getTitle(pathname);
 
   return (
     <SafeAreaView style={[styles.safe]} edges={['top']}>
       <View style={[styles.header, { backgroundColor: c.background, borderBottomColor: c.border }]}>
-        <Pressable
-          style={styles.menuBtn}
-          onPress={() => (nested ? router.back() : open())}
-          hitSlop={12}>
-          <MaterialIcons name={nested ? 'arrow-back' : 'menu'} size={26} color={c.text} />
-        </Pressable>
+        {nested ? (
+          <Pressable
+            style={styles.menuBtn}
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityLabel="Geri"
+            accessibilityHint="Önceki sayfaya dön">
+            <MaterialIcons name="arrow-back" size={26} color={c.text} />
+          </Pressable>
+        ) : (
+          <View style={styles.placeholder} />
+        )}
         <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>
           {title}
         </Text>
@@ -73,7 +92,13 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
   },
-  menuBtn: { padding: 4 },
+  menuBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: -4,
+  },
   title: { fontSize: 18, fontWeight: '700', flex: 1, textAlign: 'center' },
   placeholder: { width: 34 },
 });

@@ -1,9 +1,16 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { QuizResult, WrongAnswer } from '@/types';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { addQuizResultLocal, getQuizResults } from '@/lib/localStorage';
+import type { QuizResult, WrongAnswer } from '@/types';
 
 interface StatsContextType {
   results: QuizResult[];
-  addResult: (score: number, total: number, wrong: WrongAnswer[]) => void;
+  addResult: (
+    score: number,
+    totalQuestions: number,
+    wrongAnswers: WrongAnswer[],
+    examLabel?: string
+  ) => Promise<void>;
+  reloadFromStorage: () => Promise<void>;
 }
 
 const StatsContext = createContext<StatsContextType | null>(null);
@@ -11,26 +18,33 @@ const StatsContext = createContext<StatsContextType | null>(null);
 export function StatsProvider({ children }: { children: React.ReactNode }) {
   const [results, setResults] = useState<QuizResult[]>([]);
 
+  useEffect(() => {
+    getQuizResults().then(setResults);
+  }, []);
+
   const addResult = useCallback(
-    (score: number, total: number, wrong: WrongAnswer[]) => {
-      setResults((prev) => [
-        {
-          id: Date.now().toString(),
-          date: new Date().toISOString(),
-          score,
-          totalQuestions: total,
-          wrongAnswers: wrong,
-        },
-        ...prev,
-      ]);
+    async (
+      score: number,
+      totalQuestions: number,
+      wrongAnswers: WrongAnswer[],
+      examLabel?: string
+    ) => {
+      await addQuizResultLocal({ score, totalQuestions, wrongAnswers, examLabel });
+      const list = await getQuizResults();
+      setResults(list);
     },
     []
   );
 
+  const reloadFromStorage = useCallback(async () => {
+    const list = await getQuizResults();
+    setResults(list);
+  }, []);
+
+  const value: StatsContextType = { results, addResult, reloadFromStorage };
+
   return (
-    <StatsContext.Provider value={{ results, addResult }}>
-      {children}
-    </StatsContext.Provider>
+    <StatsContext.Provider value={value}>{children}</StatsContext.Provider>
   );
 }
 

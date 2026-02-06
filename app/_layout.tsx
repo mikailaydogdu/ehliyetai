@@ -1,10 +1,18 @@
 import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import * as NavigationBar from 'expo-navigation-bar';
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import 'react-native-reanimated';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { RedirectWhenOffline } from '@/components/RedirectWhenOffline';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { NetworkProvider } from '@/context/NetworkContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { ContentProvider } from '@/context/ContentContext';
 import { StatsProvider } from '@/context/StatsContext';
 import { ExamDateProvider } from '@/context/ExamDateContext';
 import { WrongQuestionsProvider } from '@/context/WrongQuestionsContext';
@@ -36,8 +44,18 @@ const DarkThemeCustom = {
 
 function RootStack() {
   const { colorScheme } = useTheme();
+  const c = Colors[colorScheme ?? 'light'];
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      NavigationBar.setBackgroundColorAsync(colorScheme === 'dark' ? c.background : '#FFFFFF');
+      NavigationBar.setButtonStyleAsync(colorScheme === 'dark' ? 'light' : 'dark');
+    }
+  }, [colorScheme, c.background]);
+
   return (
     <NavThemeProvider value={colorScheme === 'dark' ? DarkThemeCustom : LightTheme}>
+      <RedirectWhenOffline />
       <Stack
           screenOptions={{
             headerShown: false,
@@ -46,35 +64,47 @@ function RootStack() {
           }}
           initialRouteName="index">
           <Stack.Screen name="index" options={{ gestureEnabled: false }} />
-          <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-          <Stack.Screen name="giris" options={{ gestureEnabled: false }} />
-          <Stack.Screen name="kayit" options={{ title: 'Kayıt Ol' }} />
+          <Stack.Screen name="offline" options={{ gestureEnabled: false, title: 'Bağlantı Yok' }} />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false, title: 'Hoş Geldin' }} />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="sinav-baslangic" options={{ title: 'Sınav Başlangıç' }} />
           <Stack.Screen name="quiz" options={{ title: 'Sınav', gestureEnabled: false }} />
           <Stack.Screen name="yanlis-sorular" options={{ title: 'Yanlış Yaptığım Sorular' }} />
-          <Stack.Screen name="sinav-tarihim" options={{ title: 'Sınav Tarihim' }} />
           <Stack.Screen name="profil-guncelleme" options={{ title: 'Profil Güncelleme' }} />
-          <Stack.Screen name="sifre-degistir" options={{ title: 'Şifre Değiştir' }} />
           <Stack.Screen name="yardim" options={{ title: 'Yardım' }} />
           <Stack.Screen name="istatistikler" options={{ title: 'İstatistikler' }} />
+          <Stack.Screen name="sinav-sonuclari" options={{ title: 'Sınav Sonuçları' }} />
+          <Stack.Screen name="uygulama-hakkinda" options={{ title: 'Uygulama Hakkında' }} />
+          <Stack.Screen name="gizlilik" options={{ title: 'Gizlilik Politikası' }} />
+          <Stack.Screen name="kullanim-kosullari" options={{ title: 'Kullanım Koşulları' }} />
+          <Stack.Screen name="sikca-sorulan-sorular" options={{ title: 'Sıkça Sorulan Sorular' }} />
+          <Stack.Screen name="pro-uyelik" options={{ title: 'Pro Üyelik' }} />
         </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </NavThemeProvider>
   );
 }
 
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <StatsProvider>
-          <ExamDateProvider>
-            <WrongQuestionsProvider>
-              <RootStack />
-            </WrongQuestionsProvider>
-          </ExamDateProvider>
-        </StatsProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <NetworkProvider>
+          <AuthProvider>
+            <ContentProvider>
+              <StatsProvider>
+                <ExamDateProvider>
+                  <WrongQuestionsProvider>
+                    <RootStack />
+                  </WrongQuestionsProvider>
+                </ExamDateProvider>
+              </StatsProvider>
+            </ContentProvider>
+          </AuthProvider>
+        </NetworkProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

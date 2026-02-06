@@ -1,9 +1,4 @@
-import { Category, Lesson, Question } from '@/types';
-import {
-  getEhliyetQuestions,
-  getQuestionsByCategory as getByCategory,
-} from '@/data/ehliyetSorulari';
-import { getIsaretQuestions } from '@/data/isaretSorulari';
+import { Category, Lesson } from '@/types';
 
 const QUIZ_QUESTION_COUNT = 10;
 
@@ -24,48 +19,37 @@ export const EXAM_THEORY_ATTEMPTS = 4;
 export const EXAM_DRIVING_ATTEMPTS = 4;
 
 /** Trafik 23 sorunun kaçı metin, kaçı işaret levhası (görselli) */
-const EXAM_TRAFIK_TEXT = 18;
-const EXAM_ISARET_IN_EXAM = 5;
+export const EXAM_TRAFIK_TEXT = 18;
+export const EXAM_ISARET_IN_EXAM = 5;
 
-/** Eğitim içeriği: her kategori için başlık + açıklama (lesson) blokları. */
+/** Notlar: Sadece işaretler burada (Firebase'e eklenmeyecek, realtime ekleyeceksiniz). Diğer kategorilerin notları Firebase'den yüklenecek. */
 const educationLessons: Record<string, Lesson[]> = {
-  trafik: [
-    { id: 'trafik-1', order: 1, title: 'Hız Kuralları', content: 'Yerleşim yeri içinde 50 km/s, yerleşim yeri dışında 90 km/s, bölünmüş yollarda 110 km/s hız sınırlarına uyulmalıdır. Hız sınırı işaretleriyle belirtilen farklı limitler varsa onlar geçerlidir.', questions: [] },
-    { id: 'trafik-2', order: 2, title: 'Takip Mesafesi', content: 'Öndeki aracı güvenli bir mesafeden takip etmek gerekir. Hızın yarısı kadar metre (örn. 90 km/s’de en az 45 m) veya 2 saniye kuralı uygulanır: Öndeki aracın geçtiği noktaya 2 saniyeden önce varmamalısınız.', questions: [] },
-    { id: 'trafik-3', order: 3, title: 'Geçiş Üstünlüğü', content: 'Ambulans, itfaiye, polis gibi görevli araçlar ışıklı ve sesli işaret verdiğinde yol vermek zorunludur. Kavşaklarda sağdan gelen araçlara, ana yoldaysanız tali yoldan gelenlere üstünlük vardır.', questions: [] },
-  ],
-  ilkyardim: [
-    { id: 'ilkyardim-1', order: 1, title: 'İlk Yardımın ABC\'si', content: 'A: Hava yolu açıklığı kontrol edilir. B: Solunum değerlendirilir. C: Dolaşım (nabız, kanama) kontrol edilir. Bilinçsiz kazazedede önce 112 aranır, sonra temel yaşam desteği uygulanır.', questions: [] },
-    { id: 'ilkyardim-2', order: 2, title: 'Kanama ve Şok', content: 'Kanamada yara üzerine temiz bezle baskı yapılır; gerekirse turnike uygulanır. Şokta hasta sırt üstü yatırılır, ayaklar 30 cm yukarı kaldırılır, vücut ısısı korunur.', questions: [] },
-    { id: 'ilkyardim-3', order: 3, title: 'Kırık ve Çıkık', content: 'Kırık şüphesinde uzuv hareket ettirilmez, atel veya destekle sabitlenir. Çıkıkta yerine oturtulmaya çalışılmaz; soğuk uygulama ve sabitleme yapılır.', questions: [] },
-  ],
-  motor: [
-    { id: 'motor-1', order: 1, title: 'Motor Parçaları', content: 'Motor; silindir, piston, krank mili, supap ve ateşleme sistemi gibi parçalardan oluşur. Dört zamanlı motorda emme, sıkıştırma, ateşleme ve egzoz zamanları çalışır.', questions: [] },
-    { id: 'motor-2', order: 2, title: 'Yağlama ve Soğutma', content: 'Motor yağı sürtünmeyi azaltır ve aşınmayı önler. Soğutma sistemi (radyatör, su pompası) motorun aşırı ısınmasını engeller. Yağ ve antifriz seviyeleri düzenli kontrol edilmelidir.', questions: [] },
-    { id: 'motor-3', order: 3, title: 'Fren Sistemi', content: 'Disk ve kampana frenler ana fren sistemini oluşturur. ABS (kilitlenme önleyici) tekerleklerin kilitlenmesini engelleyerek fren mesafesini ve kontrolü iyileştirir.', questions: [] },
-  ],
-  trafikadabi: [
-    { id: 'trafikadabi-1', order: 1, title: 'Saygı ve Sabır', content: 'Trafikte diğer sürücü ve yayalara saygı göstermek, sinirli davranmamak ve sabırlı olmak hem güvenliği hem de toplumsal huzuru artırır.', questions: [] },
-    { id: 'trafikadabi-2', order: 2, title: 'Yaya Önceliği', content: 'Yaya geçitlerinde ve kavşaklarda yayalara yol vermek yasal zorunluluktur. Yayaların güvenli geçişini beklemek trafik adabının gereğidir.', questions: [] },
-    { id: 'trafikadabi-3', order: 3, title: 'Işık ve Korna Kullanımı', content: 'Geceleyin gerekmedikçe uzun far kullanılmamalı; karşıdan gelen sürücüyü rahatsız etmemek gerekir. Korna sadece uyarı amacıyla ve zorunlu hallerde kullanılmalıdır.', questions: [] },
-  ],
-  kurallar: [
-    { id: 'kurallar-1', order: 1, title: 'Ehliyet Sınıfları', content: 'B sınıfı otomobil ve kamyonet kullanımı içindir. M, A1, A2, A motosiklet; C kamyon; D otobüs; E römorklu araçlar için verilir. Sınıf dışı araç kullanmak yasaktır.', questions: [] },
-    { id: 'kurallar-2', order: 2, title: 'Ceza ve Puan', content: 'Trafik ihlallerinde para cezası ve ceza puanı uygulanır. Belirli puana ulaşan sürücülerin ehliyeti süreli olarak alınabilir.', questions: [] },
-    { id: 'kurallar-3', order: 3, title: 'Alkol ve Uyuşturucu', content: 'Alkol ve uyuşturucu etkisi altında araç kullanmak yasaktır. Kan alkol limiti 0.50 promil; sıfır alkol uygulaması olan gruplar da vardır.', questions: [] },
-  ],
   isaretler: [
-    { id: 'isaretler-1', order: 1, title: 'Tehlike ve Uyarı İşaretleri', content: 'Üçgen, kırmızı çerçeveli işaretler uyarı amaçlıdır: viraj, kavşak, yaya geçidi, hayvan çıkabilir vb. Sürücü hızını düşürüp dikkatli olmalıdır.', questions: [] },
-    { id: 'isaretler-2', order: 2, title: 'Yasak ve Zorunluluk İşaretleri', content: 'Yuvarlak, kırmızı çerçeveli işaretler yasak; mavi zeminli yuvarlak işaretler zorunluluk bildirir (örn. mecburi yön, kask zorunlu).', questions: [] },
-    { id: 'isaretler-3', order: 3, title: 'Bilgi ve Yön İşaretleri', content: 'Dikdörtgen, mavi veya yeşil işaretler bilgi ve yönlendirme içindir: otoyol, yerleşim, tesis ve mesafe bilgisi verir.', questions: [] },
-  ],
-  bakim: [
-    { id: 'bakim-1', order: 1, title: 'Günlük Kontroller', content: 'Farlar, sinyaller, lastik hava basıncı, yağ ve soğutma suyu seviyeleri her gün veya yolculuk öncesi kontrol edilmelidir.', questions: [] },
-    { id: 'bakim-2', order: 2, title: 'Periyodik Bakım', content: 'Belirli km veya sürelerde yağ ve filtre değişimi, fren ve süspansiyon kontrolü yaptırılmalıdır. Bakım kartı işlenerek kayıt tutulur.', questions: [] },
-    { id: 'bakim-3', order: 3, title: 'Lastik ve Fren', content: 'Lastik diş derinliği yasal minimum 1,6 mm’dir. Fren balataları ve diskleri aşınma sınırına gelmeden değiştirilmelidir.', questions: [] },
+    { id: 'isaretler-1', order: 1, title: 'Tehlike ve Uyarı İşaretleri', summary: 'Üçgen kırmızı çerçeve: viraj, kavşak, yaya geçidi vb.', content: 'Üçgen, kırmızı çerçeveli işaretler uyarı amaçlıdır: viraj, kavşak, yaya geçidi, hayvan çıkabilir vb. Sürücü hızını düşürüp dikkatli olmalıdır.', questions: [] },
+    { id: 'isaretler-2', order: 2, title: 'Yasak ve Zorunluluk İşaretleri', summary: 'Kırmızı çerçeve yasak; mavi zemin zorunluluk.', content: 'Yuvarlak, kırmızı çerçeveli işaretler yasak; mavi zeminli yuvarlak işaretler zorunluluk bildirir (örn. mecburi yön, kask zorunlu).', questions: [] },
+    { id: 'isaretler-3', order: 3, title: 'Bilgi ve Yön İşaretleri', summary: 'Dikdörtgen mavi/yeşil: bilgi ve yön.', content: 'Dikdörtgen, mavi veya yeşil işaretler bilgi ve yönlendirme içindir: otoyol, yerleşim, tesis ve mesafe bilgisi verir.', questions: [] },
+    { id: 'isaretler-4', order: 4, title: 'Yol Çizgileri', summary: 'Kesik çizgi geçilebilir; düz çizgi geçilemez.', content: 'Yoldaki kesik çizgiler güvenli durumlarda sollama yapılabileceğini, devamlı düz çizgiler ise şerit değiştirmenin yasak olduğunu belirtir.', questions: [] },
+    { id: 'isaretler-5', order: 5, title: 'Dur ve Yol Ver', summary: 'Sekizgen kırmızı "DUR"; ters üçgen "YOL VER".', content: 'Dur levhası (sekizgen) tam bir duruş gerektirir. Yol ver (ters üçgen) ise ana yoldakilere öncelik tanınması gerektiğini bildirir.', questions: [] },
+    { id: 'isaretler-6', order: 6, title: 'Park Etme İşaretleri', summary: 'P harfi park; çizgi varsa park yasak.', content: 'Mavi kare "P" park yerini gösterir. Üzerinde tek kırmızı çizgi varsa duraklama yapılabilir ama park edilemez; çarpı varsa ikisi de yasaktır.', questions: [] },
+    { id: 'isaretler-7', order: 7, title: 'Gabari ve Sınırlar', summary: 'Yükseklik, genişlik ve ağırlık sınırları.', content: 'Köprü altları veya dar yollar için yükseklik (oklar üstte-altta) veya genişlik (oklar yanda) sınırlarını gösteren levhalardır.', questions: [] },
+    { id: 'isaretler-8', order: 8, title: 'Demiryolu Geçitleri', summary: 'Kontrollü ve kontrolsüz hemzemin geçitler.', content: 'Çit sembolü bariyerli (kontrollü), buharlı tren sembolü bariyersiz (kontrolsüz) demiryolu geçidini temsil eder.', questions: [] },
+    { id: 'isaretler-9', order: 9, title: 'Trafik Tanzim İşaretleri', summary: 'Girişi olmayan yol, motosiklet hariç kapalı yol vb.', content: 'Kırmızı yuvarlak içindeki semboller o yolun kimlere veya hangi eylemlere kapalı olduğunu gösterir.', questions: [] },
+    { id: 'isaretler-10', order: 10, title: 'Yatay İşaretlemeler', summary: 'Yaya geçidi, bisiklet yolu, yavaşlama uyarı çizgileri.', content: 'Asfaltın üzerine çizilen yaya geçidi ("zebra"), yön okları ve yavaşlama uyarı çizgileri de birer trafik işaretidir.', questions: [] },
+    { id: 'isaretler-11', order: 11, title: 'Yol Çizgileri (Yatay)', summary: 'Düz çizgi: geçilmez, kesik çizgi: geçilebilir.', content: 'Yoldaki devamlı (düz) çizgiler şerit değiştirmenin yasak olduğunu, kesik çizgiler ise güvenli hallerde geçilebileceğini bildirir.', questions: [] },
+    { id: 'isaretler-12', order: 12, title: 'Bilgi İşaretleri', summary: 'Mavi ve kare levhalar.', content: 'Otoyol çıkışları, meskun mahal isimleri, hastane, akaryakıt istasyonu gibi bilgileri veren genellikle mavi zeminli işaretlerdir.', questions: [] },
+    { id: 'isaretler-13', order: 13, title: 'Yol Ver ve Dur İşaretleri', summary: 'Ters üçgen ve sekizgen levha.', content: 'Ters üçgen "Yol Ver" demektir, tali yoldadır. Kırmızı sekizgen "DUR" levhası ise mutlaka tam duruş yapılması gerektiğini bildirir.', questions: [] },
+    { id: 'isaretler-14', order: 14, title: 'Gabari İşaretleri', summary: 'Yükseklik ve genişlik sınırlamaları.', content: 'Alt geçitlerde yüksekliği (örneğin 3.50m) veya dar köprülerde genişliği (2.30m) sınırlayan kırmızı çerçeveli yuvarlak levhalardır.', questions: [] },
+    { id: 'isaretler-15', order: 15, title: 'Trafik Tanzim İşaretleri', summary: 'Yasaklamaları ve kısıtlamaları bildirir.', content: 'Genellikle yuvarlak ve kırmızı çerçevelidir. Girişi olmayan yol, motosiklet hariç kapalı yol gibi emirler içerir.', questions: [] },
+    { id: 'isaretler-16', order: 16, title: 'Tehlikeli Viraj İşaretleri', summary: 'Keskin viraj yönünü belirtir.', content: 'Siyah zemin üzerine beyaz oklarla virajın yönünü ve keskinliğini bildirir. Bu levhaları görünce hız azaltılmalıdır.', questions: [] },
+    { id: 'isaretler-17', order: 17, title: 'Okul ve Yaya Geçidi', summary: 'Yaya önceliğini hatırlatır.', content: 'Mavi kare levha içindeki yürüyen insan veya çocuk figürleri, yaya veya okul geçidine yaklaşıldığını bildirir.', questions: [] },
+    { id: 'isaretler-18', order: 18, title: 'Azami Hız Sınırlaması', summary: 'Yuvarlak kırmızı çerçeve içindeki rakam.', content: 'O yolda gidilebilecek en yüksek hızı belirtir. Eğer gri renkte ve üzeri çiziliyse hız sınırlamasının sona erdiğini bildirir.', questions: [] },
+    { id: 'isaretler-19', order: 19, title: 'Duraklama ve Park Yasakları', summary: 'Kırmızı çapraz veya tek çizgi.', content: 'Yuvarlak mavi zemin üzerine bir kırmızı çizgi "Park Yasak", çapraz iki çizgi ise "Duraklama ve Park Yasak" demektir.', questions: [] },
+    { id: 'isaretler-20', order: 20, title: 'Mecburi Yön İşaretleri', summary: 'Mavi yuvarlak levhalar.', content: 'Sadece belirtilen yöne gidilmesi gerektiğini bildirir (Örn: Sadece sağa mecburi yön). Sürücü başka yöne dönemez.', questions: [] },
   ],
 };
 
+/** Aşağıdaki kategorilerin notları Firebase'den yüklenecek; burada boş bırakıldı. */
+const emptyLessons: Lesson[] = [];
 /** Kategoriler (kısa açıklama + tıklanınca o kategorinin 10 soruluk sınavı). */
 export const mockCategories: Category[] = [
   {
@@ -74,7 +58,8 @@ export const mockCategories: Category[] = [
     name: 'Trafik',
     icon: 'car',
     description: 'Trafik kuralları, işaretler ve güvenli sürüş ile ilgili sorular.',
-    lessons: educationLessons.trafik ?? [],
+    summary: 'Hız, takip mesafesi ve geçiş üstünlüğü kurallarını bilmek güvenli sürüş için temeldir.',
+    lessons: emptyLessons,
   },
   {
     id: 'ilkyardim',
@@ -82,7 +67,8 @@ export const mockCategories: Category[] = [
     name: 'İlk Yardım',
     icon: 'medkit',
     description: 'İlk yardım temel bilgisi, kanama, kırık ve şok durumları ile ilgili sorular.',
-    lessons: educationLessons.ilkyardim ?? [],
+    summary: 'ABC (hava yolu, solunum, dolaşım), kanama-şok ve kırık-çıkıkta ilk müdahale hayat kurtarır.',
+    lessons: emptyLessons,
   },
   {
     id: 'motor',
@@ -90,7 +76,8 @@ export const mockCategories: Category[] = [
     name: 'Motor',
     icon: 'construct',
     description: 'Araç tekniği, motor ve bakım ile ilgili sorular.',
-    lessons: educationLessons.motor ?? [],
+    summary: 'Motor parçaları, yağlama-soğutma ve fren sistemi bilgisi sınavda ve günlük kullanımda işe yarar.',
+    lessons: emptyLessons,
   },
   {
     id: 'trafikadabi',
@@ -98,7 +85,8 @@ export const mockCategories: Category[] = [
     name: 'Trafik Adabı',
     icon: 'people',
     description: 'Trafik adabı ve saygı ile ilgili sorular.',
-    lessons: educationLessons.trafikadabi ?? [],
+    summary: 'Saygı, sabır, yaya önceliği ve doğru ışık-korna kullanımı trafik kültürünün parçasıdır.',
+    lessons: emptyLessons,
   },
   {
     id: 'kurallar',
@@ -106,7 +94,8 @@ export const mockCategories: Category[] = [
     name: 'Kurallar',
     icon: 'gavel',
     description: 'Yasal düzenlemeler ve trafik kuralları ile ilgili sorular.',
-    lessons: educationLessons.kurallar ?? [],
+    summary: 'Ehliyet sınıfları, ceza-puan sistemi ve alkol-uyuşturucu yasakları bilinmelidir.',
+    lessons: emptyLessons,
   },
   {
     id: 'isaretler',
@@ -114,6 +103,7 @@ export const mockCategories: Category[] = [
     name: 'İşaretler',
     icon: 'traffic',
     description: 'Yol ve trafik işaretlerinin anlamları ile ilgili sorular.',
+    summary: 'Uyarı, yasak, zorunluluk ve bilgi işaretlerini tanımak güvenli sürüş için şarttır.',
     lessons: educationLessons.isaretler ?? [],
   },
   {
@@ -122,7 +112,8 @@ export const mockCategories: Category[] = [
     name: 'Araç Bakımı',
     icon: 'build',
     description: 'Periyodik bakım ve araç kontrolleri ile ilgili sorular.',
-    lessons: educationLessons.bakim ?? [],
+    summary: 'Günlük ve periyodik bakım, lastik ve fren kontrolleri aracın güvenliği için önemlidir.',
+    lessons: emptyLessons,
   },
 ];
 
@@ -132,25 +123,10 @@ export const QUIZ_MAX_QUESTIONS = QUIZ_QUESTION_COUNT;
 /**
  * Görselli sorular:
  * - İşaretler: data/tabela/*.png + tabelaImages.ts + isaretSorulari.ts (imageCode).
- * - Diğer kategoriler (Trafik, İlk Yardım, Motor, Trafik Adabı): veri kaynaklarında (ehliyetSorulari, veri.json, yeni.json) görsel alanı yok; sadece metin soruları. Gerçek sınavlarda bazen gösterge paneli vb. görselli sorular çıkabiliyor; ileride imageCode benzeri alan ve görsel klasörü eklenebilir.
+ * - Diğer kategoriler (Trafik, İlk Yardım, Motor, Trafik Adabı): Firebase'den gelen metin soruları. İleride imageCode benzeri alan eklenebilir.
  */
-/** Ana sayfadaki bazı kategoriler aynı soru havuzunu kullanır (kurallar→trafik, bakim→motor). İşaretler kendi görselli sorularını kullanır. */
-const CATEGORY_TO_SOURCE: Record<string, string> = {
-  kurallar: 'trafik',
-  bakim: 'motor',
-};
-
-/** Kategoriye tıklanınca: o kategorinin soruları (en fazla 10). İşaretler için görselli "Bu işaret ne anlama gelir?" soruları. */
-export function getQuestionsByCategory(categoryId: string): Question[] {
-  if (categoryId === 'isaretler') {
-    return getIsaretQuestions(QUIZ_MAX_QUESTIONS);
-  }
-  const sourceId = CATEGORY_TO_SOURCE[categoryId] ?? categoryId;
-  return getByCategory(sourceId).slice(0, QUIZ_MAX_QUESTIONS);
-}
-
-/** Resmi sınav: İlk Yardım 12, Trafik Adabı 6, Trafik 23, Motor 9 = 50 soru (karışık). */
-function shuffleArray<T>(arr: T[]): T[] {
+/** Fisher–Yates karıştırma – Tekrar’da yeni sıra için kullanılır. */
+export function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -159,32 +135,3 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Resmi dağılım: İlk Yardım 12, Trafik Adabı 6, Trafik ve Çevre 23 (metin + işaret levhası), Motor 9 = 50 soru. */
-export function getMixedQuestionsForQuiz(): Question[] {
-  const all = getEhliyetQuestions();
-  const byCategory: Record<string, Question[]> = {};
-  all.forEach((q) => {
-    if (!byCategory[q.categoryId]) byCategory[q.categoryId] = [];
-    byCategory[q.categoryId].push(q);
-  });
-  const ilkyardim = shuffleArray(byCategory['ilkyardim'] ?? []).slice(0, EXAM_ILK_YARDIM);
-  const trafikadabi = shuffleArray(byCategory['trafikadabi'] ?? []).slice(0, EXAM_TRAFIK_ADABI);
-  const trafikText = shuffleArray(byCategory['trafik'] ?? []).slice(0, EXAM_TRAFIK_TEXT);
-  const trafikIsaret = getIsaretQuestions(EXAM_ISARET_IN_EXAM);
-  const trafik = shuffleArray([...trafikText, ...trafikIsaret]);
-  const motor = shuffleArray(byCategory['motor'] ?? []).slice(0, EXAM_MOTOR);
-  const combined = [...ilkyardim, ...trafikadabi, ...trafik, ...motor];
-  if (__DEV__ && combined.length !== EXAM_TOTAL_QUESTIONS) {
-    console.warn(
-      `[getMixedQuestionsForQuiz] Beklenen ${EXAM_TOTAL_QUESTIONS} soru, gelen ${combined.length}. ` +
-        `Dağılım: İlkYardım=${ilkyardim.length} TrafikAdabı=${trafikadabi.length} Trafik=${trafik.length} Motor=${motor.length}`
-    );
-  }
-  return shuffleArray(combined);
-}
-
-
-/** Tüm sorular (karışık değil, sıralı – geriye uyumluluk). */
-export function getAllQuestions(): Question[] {
-  return getEhliyetQuestions();
-}

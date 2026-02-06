@@ -23,10 +23,9 @@ export type ThemeColors = {
   cardShadow: string;
   success: string;
   error: string;
-  /** Soru cevabında doğru şıkkı vurgulamak için yeşil */
   feedbackCorrect: string;
-  /** Soru cevabında yanlış seçilen şıkkı vurgulamak için kırmızı */
   feedbackWrong: string;
+  accentPurple: string;
   shadowColor: string;
   shadowOpacity: number;
   shadowRadius: number;
@@ -35,52 +34,54 @@ export type ThemeColors = {
 
 export const Colors: Record<ColorScheme, ThemeColors> = {
   light: {
-    text: '#000000',
-    textSecondary: '#6B6B6B',
-    background: '#FFFFFF',
+    text: '#1A1A1A',
+    textSecondary: '#6B7280',
+    background: '#F8FAFC',
     card: '#FFFFFF',
-    tint: '#000000',
-    primary: '#000000',
+    tint: '#3B82F6',
+    primary: '#3B82F6',
     primaryContrast: '#FFFFFF',
-    primaryLight: '#333333',
-    icon: '#6B6B6B',
-    tabIconDefault: '#6B6B6B',
-    tabIconSelected: '#000000',
-    border: '#E0E0E0',
-    selectedBg: '#F5F5F5',
-    cardShadow: '#00000012',
-    success: '#000000',
-    error: '#000000',
-    feedbackCorrect: '#34C759',
-    feedbackWrong: '#FF3B30',
+    primaryLight: '#60A5FA',
+    icon: '#6B7280',
+    tabIconDefault: '#9CA3AF',
+    tabIconSelected: '#3B82F6',
+    border: '#E5E7EB',
+    selectedBg: '#EFF6FF',
+    cardShadow: '#00000008',
+    success: '#22C55E',
+    error: '#EF4444',
+    feedbackCorrect: '#22C55E',
+    feedbackWrong: '#EF4444',
+    accentPurple: '#8B5CF6',
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   dark: {
-    text: '#FFFFFF',
-    textSecondary: '#A0A0A0',
-    background: '#000000',
-    card: '#1A1A1A',
-    tint: '#FFFFFF',
-    primary: '#FFFFFF',
-    primaryContrast: '#000000',
-    primaryLight: '#E0E0E0',
-    icon: '#A0A0A0',
-    tabIconDefault: '#A0A0A0',
-    tabIconSelected: '#FFFFFF',
-    border: '#2A2A2A',
-    selectedBg: '#252525',
-    cardShadow: '#00000050',
-    success: '#FFFFFF',
-    error: '#FFFFFF',
-    feedbackCorrect: '#30D158',
-    feedbackWrong: '#FF453A',
+    text: '#F1F5F9',
+    textSecondary: '#94A3B8',
+    background: '#0C0C0E',
+    card: '#16161A',
+    tint: '#60A5FA',
+    primary: '#60A5FA',
+    primaryContrast: '#0C0C0E',
+    primaryLight: '#93C5FD',
+    icon: '#94A3B8',
+    tabIconDefault: '#64748B',
+    tabIconSelected: '#60A5FA',
+    border: 'rgba(255,255,255,0.08)',
+    selectedBg: 'rgba(96,165,250,0.12)',
+    cardShadow: '#00000040',
+    success: '#34D399',
+    error: '#F87171',
+    feedbackCorrect: '#34D399',
+    feedbackWrong: '#F87171',
+    accentPurple: '#A78BFA',
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
   },
 };
 
@@ -112,6 +113,9 @@ export const Spacing = {
   lg: 24,
   xl: 32,
 };
+
+/** iOS HIG: minimum dokunma alanı 44pt */
+export const TOUCH_TARGET_MIN = 44;
 
 export const BorderRadius = {
   sm: 8,

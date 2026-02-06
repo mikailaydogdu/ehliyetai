@@ -1,33 +1,44 @@
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useContent } from '@/context/ContentContext';
 
 export default function IndexScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
-  const { hasCompletedOnboarding, user, isLoading } = useAuth();
+  const { hasCompletedOnboarding, isLoading } = useAuth();
+  const { isContentLoading } = useContent();
 
   useEffect(() => {
     if (isLoading) return;
     if (hasCompletedOnboarding === false) {
       router.replace('/onboarding');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => SplashScreen.hideAsync());
+      });
       return;
     }
-    if (!user) {
-      router.replace('/giris');
-      return;
-    }
+    if (isContentLoading) return;
     router.replace('/(tabs)');
-  }, [isLoading, hasCompletedOnboarding, user]);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => SplashScreen.hideAsync());
+    });
+  }, [isLoading, hasCompletedOnboarding, isContentLoading]);
 
-  return (
-    <View style={[styles.container, { backgroundColor: c.background }]}>
-      <ActivityIndicator size="large" color={c.primary} />
-    </View>
-  );
+  if (!isLoading && hasCompletedOnboarding === true && isContentLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: c.background }]}>
+        <ActivityIndicator size="large" color={c.primary} />
+        <Text style={[styles.loadingText, { color: c.textSecondary }]}>İçerik yükleniyor…</Text>
+      </View>
+    );
+  }
+
+  return <View style={[styles.container, { backgroundColor: c.background }]} />;
 }
 
 const styles = StyleSheet.create({
@@ -36,4 +47,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  loadingText: { marginTop: Spacing.md, fontSize: 16 },
 });

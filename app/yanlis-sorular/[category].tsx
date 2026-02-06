@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -7,82 +7,79 @@ import {
   View,
   Text,
   Image,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useWrongQuestions } from '@/context/WrongQuestionsContext';
 import type { SavedWrongQuestion } from '@/types';
-import { getTabelaImage } from '@/data/tabelaImages';
+import { getQuestionImageSource } from '@/data/tabelaImages';
 
-export default function YanlisSorularScreen() {
+export default function YanlisSorularCategoryScreen() {
+  const { category, categoryName } = useLocalSearchParams<{ category: string; categoryName?: string }>();
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const { wrongQuestions, removeWrongQuestion } = useWrongQuestions();
 
-  const [questionsToReview, setQuestionsToReview] = useState<SavedWrongQuestion[]>([]);
+  const questionsToReview = useMemo(
+    () => wrongQuestions.filter((q) => q.categoryId === category),
+    [wrongQuestions, category]
+  );
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    setQuestionsToReview(wrongQuestions);
     setCurrentIndex(0);
     setSelectedIndex(null);
-  }, [wrongQuestions.length]);
+  }, [category]);
 
   const q = questionsToReview[currentIndex];
   const total = questionsToReview.length;
   const hasAnswered = selectedIndex !== null;
   const correct = q && selectedIndex === q.correctIndex;
+  const title = categoryName ?? category;
 
   const handleSelectOption = (optionIndex: number) => {
     if (selectedIndex !== null) return;
     setSelectedIndex(optionIndex);
     if (optionIndex === q.correctIndex) {
       removeWrongQuestion(q.questionId);
-      setQuestionsToReview((prev) => prev.filter((_, i) => i !== currentIndex));
     }
   };
 
   const handleNext = () => {
     setSelectedIndex(null);
     if (currentIndex >= questionsToReview.length - 1) {
-      if (questionsToReview.length <= 1) {
-        Alert.alert('Tamamlandı', 'Tüm soruları çözdün.', [
-          { text: 'Tamam', onPress: () => router.back() },
-        ]);
-        return;
-      }
       setCurrentIndex(0);
       return;
     }
     setCurrentIndex((i) => i + 1);
   };
 
-  if (wrongQuestions.length === 0) {
+  if (questionsToReview.length === 0) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
         <View style={[styles.header, { borderBottomColor: c.border }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backBtn}
+            accessibilityLabel="Geri"
+            accessibilityHint="Önceki sayfaya dön">
             <MaterialIcons name="arrow-back" size={24} color={c.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: c.text }]}>Yanlış Yaptığım Sorular</Text>
+          <Text style={[styles.headerTitle, { color: c.text }]}>{title}</Text>
         </View>
         <View style={styles.emptyWrap}>
-          <MaterialIcons name="assignment" size={64} color={c.icon} />
-          <Text style={[styles.emptyTitle, { color: c.text }]}>Henüz yanlış soru yok</Text>
-          <Text style={[styles.emptyText, { color: c.textSecondary }]}>
-            Sınav veya kategori testi çöz; yanlış yaptığın sorular burada birikir ve tekrar
-            çözebilirsin.
-          </Text>
+          <MaterialIcons name="check-circle" size={64} color={c.success} />
+          <Text style={[styles.emptyTitle, { color: c.text }]}>Bu kategoride yanlış soru kalmadı</Text>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: c.primary }]}
             onPress={() => router.back()}
             activeOpacity={0.8}>
-            <Text style={[styles.backButtonText, { color: c.primaryContrast }]}>Anasayfaya dön</Text>
+            <Text style={[styles.backButtonText, { color: c.primaryContrast }]}>Kategorilere dön</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -98,7 +95,7 @@ export default function YanlisSorularScreen() {
             style={[styles.backButton, { backgroundColor: c.primary }]}
             onPress={() => router.back()}
             activeOpacity={0.8}>
-            <Text style={[styles.backButtonText, { color: c.primaryContrast }]}>Anasayfaya dön</Text>
+            <Text style={[styles.backButtonText, { color: c.primaryContrast }]}>Kategorilere dön</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -108,7 +105,11 @@ export default function YanlisSorularScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          accessibilityLabel="Geri"
+          accessibilityHint="Önceki sayfaya dön">
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: c.text }]}>
@@ -120,10 +121,10 @@ export default function YanlisSorularScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         <View style={[styles.questionBlock, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
-          {q.imageCode && getTabelaImage(q.imageCode) && (
+          {q.imageCode && getQuestionImageSource(q.imageCode) && (
             <View style={styles.signImageWrap}>
               <Image
-                source={getTabelaImage(q.imageCode)!}
+                source={getQuestionImageSource(q.imageCode)!}
                 style={styles.signImage}
                 resizeMode="contain"
               />
@@ -135,6 +136,8 @@ export default function YanlisSorularScreen() {
               const isSelected = selectedIndex === idx;
               const isCorrect = idx === q.correctIndex;
               const showResult = hasAnswered;
+              const optImg = q.optionImages?.[idx];
+              const optImgSource = optImg ? getQuestionImageSource(optImg) : undefined;
               const bg =
                 showResult && isCorrect
                   ? c.success + '20'
@@ -146,13 +149,23 @@ export default function YanlisSorularScreen() {
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={[styles.option, { backgroundColor: bg, borderColor: border }]}
+                  style={[
+                    optImgSource ? styles.optionWithImage : styles.option,
+                    { backgroundColor: bg, borderColor: border },
+                  ]}
                   onPress={() => handleSelectOption(idx)}
                   disabled={hasAnswered}
                   activeOpacity={0.7}>
-                  <Text style={[styles.optionText, { color: c.text }]}>
-                    {['A', 'B', 'C', 'D'][idx]}) {opt}
-                  </Text>
+                  {optImgSource ? (
+                    <View style={styles.optionImageRow}>
+                      <Text style={[styles.optionLabel, { color: c.text }]}>{['A', 'B', 'C', 'D'][idx]})</Text>
+                      <Image source={optImgSource} style={styles.optionImage} resizeMode="contain" />
+                    </View>
+                  ) : (
+                    <Text style={[styles.optionText, { color: c.text }]}>
+                      {['A', 'B', 'C', 'D'][idx]}) {opt}
+                    </Text>
+                  )}
                   {showResult && isCorrect && (
                     <MaterialIcons name="check-circle" size={22} color={c.success} />
                   )}
@@ -172,25 +185,12 @@ export default function YanlisSorularScreen() {
           </View>
         )}
 
-        {hasAnswered && !correct && (
-          <View style={[styles.feedback, { backgroundColor: c.error + '18', borderColor: c.error }, getCardShadow(c)]}>
-            <MaterialIcons name="info" size={24} color={c.error} />
-            <Text style={[styles.feedbackText, { color: c.text }]}>
-              Doğru cevap: {q.options[q.correctIndex]}
-            </Text>
-          </View>
-        )}
-
         {hasAnswered && (
           <TouchableOpacity
             style={[styles.nextBtn, { backgroundColor: c.primary }]}
             onPress={handleNext}
             activeOpacity={0.8}>
-            <Text style={[styles.nextBtnText, { color: c.primaryContrast }]}>
-              {currentIndex >= questionsToReview.length - 1 && questionsToReview.length <= 1
-                ? 'Bitir'
-                : 'Sonraki'}
-            </Text>
+            <Text style={[styles.nextBtnText, { color: c.primaryContrast }]}>Sonraki</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -207,11 +207,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderBottomWidth: 1,
   },
-  backBtn: { padding: 4, marginRight: Spacing.sm },
+  backBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
   headerTitle: { fontSize: 17, fontWeight: '600', flex: 1 },
   emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
   emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.sm, textAlign: 'center' },
-  emptyText: { textAlign: 'center', lineHeight: 22, marginBottom: Spacing.lg },
   backButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10 },
   backButtonText: { fontSize: 16, fontWeight: '600' },
   scroll: { flex: 1 },
@@ -235,6 +239,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
+  optionWithImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  optionImageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: Spacing.sm,
+  },
+  optionLabel: { fontSize: 15, fontWeight: '600' },
+  optionImage: { width: 80, height: 60 },
   optionText: { fontSize: 15, flex: 1 },
   feedback: {
     flexDirection: 'row',
@@ -246,10 +267,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   feedbackText: { fontSize: 16, fontWeight: '600' },
-  nextBtn: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
+  nextBtn: { paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
   nextBtnText: { fontSize: 17, fontWeight: '600' },
 });

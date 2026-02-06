@@ -133,3 +133,16 @@ const TABELA_IMAGES: Record<string, ImageSourcePropType> = {
 export function getTabelaImage(code: string): ImageSourcePropType | undefined {
   return TABELA_IMAGES[code];
 }
+
+/**
+ * image_code → görüntülenebilir kaynak.
+ *  • http(s) URL → direkt URI
+ *  • Tabela kodu (T-1a vb.) → yerel require
+ */
+export function getQuestionImageSource(code: string): ImageSourcePropType | undefined {
+  if (!code) return undefined;
+  if (code.startsWith('http://') || code.startsWith('https://')) {
+    return { uri: code };
+  }
+  return TABELA_IMAGES[code];
+}

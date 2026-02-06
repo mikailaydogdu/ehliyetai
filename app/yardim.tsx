@@ -1,43 +1,59 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
+
+const ILETISIM_EMAIL = 'mikail.aydogdu96@gmail.com';
 
 export default function YardimScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
+
+  const openMail = () => Linking.openURL(`mailto:${ILETISIM_EMAIL}`);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable
+        onPress={() => router.back()}
+        style={styles.backBtn}
+        accessibilityLabel="Geri"
+        accessibilityHint="Önceki sayfaya dön">
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: c.text }]}>Yardım</Text>
       </View>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
           <Text style={[styles.cardTitle, { color: c.text }]}>Sıkça Sorulan Sorular</Text>
           <Text style={[styles.paragraph, { color: c.textSecondary }]}>
-            B Ehliyet uygulamasında kategorilere göre test çözebilir veya tam sınav simülasyonu yapabilirsin. Yanlış
+            EhliyetAI uygulamasında kategorilere göre test çözebilir veya tam sınav simülasyonu yapabilirsin. Yanlış
             yaptığın sorular otomatik kaydedilir ve "Yanlış Yaptığım Sorular" bölümünden tekrar çözebilirsin.
           </Text>
           <Text style={[styles.paragraph, { color: c.textSecondary }]}>
-            Sınav sekmesinden 50 soruluk resmi sınav formatında deneme çözebilirsin. Chat sekmesi en az 3 sınav
-            tamamladıktan sonra AI ile ek soru üretmek için açılır.
+            Sınav sekmesinden 50 soruluk resmi sınav formatında deneme çözebilirsin. AI sekmesi en az 3 sınav
+            tamamladıktan sonra yapay zeka ile ek soru üretmek için açılır.
           </Text>
         </View>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
           <Text style={[styles.cardTitle, { color: c.text }]}>İletişim</Text>
           <Text style={[styles.paragraph, { color: c.textSecondary }]}>
-            Sorularınız için: destek@behliyet.com
+            Sorularınız için aşağıdaki e-posta adresine yazabilirsiniz.
           </Text>
+          <Pressable
+            style={[styles.mailButton, { backgroundColor: c.selectedBg, borderColor: c.border }]}
+            onPress={openMail}
+            accessibilityLabel="E-posta gönder"
+            accessibilityHint={`${ILETISIM_EMAIL} adresine e-posta açar`}>
+            <MaterialIcons name="email" size={20} color={c.primary} />
+            <Text style={[styles.mailText, { color: c.primary }]}>{ILETISIM_EMAIL}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -53,7 +69,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderBottomWidth: 1,
   },
-  backBtn: { padding: 4, marginRight: Spacing.sm },
+  backBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.xl },
@@ -65,4 +86,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.sm },
   paragraph: { fontSize: 15, lineHeight: 22, marginBottom: Spacing.sm },
+  mailButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginTop: Spacing.sm,
+  },
+  mailText: { fontSize: 15, fontWeight: '600' },
 });

@@ -1,16 +1,17 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pressable } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, getCardShadow, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useStats } from '@/context/StatsContext';
 
 export default function IstatistiklerScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const { results } = useStats();
 
   const wrongByCategory: Record<string, number> = {};
@@ -30,18 +31,60 @@ export default function IstatistiklerScreen() {
       percent: totalWrong > 0 ? Math.round((count / totalWrong) * 100) : 0,
     }));
 
+  const lastExams = results.slice(0, 10);
+  const formatDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    } catch {
+      return iso.slice(0, 10);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          accessibilityLabel="Geri"
+          accessibilityHint="Önceki sayfaya dön">
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: c.text }]}>İstatistikler</Text>
       </View>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
+        {lastExams.length > 0 && (
+          <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c), { marginBottom: Spacing.md }]}>
+            <Text style={[styles.cardTitle, { color: c.text }]}>Son sınavlar</Text>
+            <Text style={[styles.cardSubtitle, { color: c.textSecondary }]}>
+              Son {lastExams.length} sınavın puanı (doğru / toplam).
+            </Text>
+            {lastExams.map((r, i) => {
+              const pct = r.totalQuestions > 0 ? Math.round((r.score / r.totalQuestions) * 100) : 0;
+              const barWidth = r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0;
+              return (
+                <View key={r.id} style={[styles.examRow, { borderBottomColor: c.border }, i === lastExams.length - 1 && styles.examRowLast]}>
+                  <Text style={[styles.examDate, { color: c.textSecondary }]}>{formatDate(r.date)}</Text>
+                  <View style={[styles.examBarBg, { backgroundColor: c.border }]}>
+                    <View
+                      style={[
+                        styles.examBarFill,
+                        { width: `${barWidth}%`, backgroundColor: pct >= 70 ? c.success : c.error },
+                      ]}
+                    />
+                  </View>
+                  <Text style={[styles.examScore, { color: c.text }]}>
+                    {r.score}/{r.totalQuestions} (%{pct})
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
           <Text style={[styles.cardTitle, { color: c.text }]}>Yanlış Kategoriler</Text>
           <Text style={[styles.cardSubtitle, { color: c.textSecondary }]}>
@@ -108,7 +151,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderBottomWidth: 1,
   },
-  backBtn: { padding: 4, marginRight: Spacing.sm },
+  backBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
   headerTitle: { fontSize: 18, fontWeight: '700', flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.xl },
@@ -150,4 +198,16 @@ const styles = StyleSheet.create({
   chartValue: { fontSize: 13, fontWeight: '600', minWidth: 36, textAlign: 'right' },
   emptyState: { alignItems: 'center', paddingVertical: Spacing.xl },
   emptyText: { textAlign: 'center', marginTop: Spacing.md, lineHeight: 22 },
+  examRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  examRowLast: { borderBottomWidth: 0 },
+  examDate: { fontSize: 13, width: 72 },
+  examBarBg: { flex: 1, height: 16, borderRadius: 8, overflow: 'hidden' },
+  examBarFill: { height: '100%', borderRadius: 8 },
+  examScore: { fontSize: 13, fontWeight: '600', minWidth: 56, textAlign: 'right' },
 });
