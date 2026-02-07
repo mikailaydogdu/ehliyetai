@@ -72,9 +72,9 @@ export default function QuizScreen() {
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answersByIndex, setAnswersByIndex] = useState<Record<number, number>>({});
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [loadingExplanation, setLoadingExplanation] = useState(false);
-  const [explanationError, setExplanationError] = useState(false);
+  /** Açıklama soru indeksine göre saklanır; ileri/geri gidince yerinde kalır */
+  const [explanationsByIndex, setExplanationsByIndex] = useState<Record<number, { text: string | null; error: boolean }>>({});
+  const [loadingExplanationIndex, setLoadingExplanationIndex] = useState<number | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showQuestionMenu, setShowQuestionMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -95,9 +95,8 @@ export default function QuizScreen() {
     setSessionQuestions(list);
     setCurrentIndex(0);
     setAnswersByIndex({});
-    setExplanation(null);
-    setLoadingExplanation(false);
-    setExplanationError(false);
+    setExplanationsByIndex({});
+    setLoadingExplanationIndex(null);
   }, [category, daily, fullExam, quizKey, isContentLoading]);
 
   const questions = sessionQuestions;
@@ -105,6 +104,9 @@ export default function QuizScreen() {
   const [finished, setFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalWrongAnswers, setFinalWrongAnswers] = useState<WrongAnswer[]>([]);
+  /** Sonuç ekranında tüm soruları doğru/yanlış göstermek için */
+  const [finalQuestions, setFinalQuestions] = useState<Question[]>([]);
+  const [finalAnswersByIndex, setFinalAnswersByIndex] = useState<Record<number, number>>({});
   const initialSeconds = (daily === '1' ? 10 : category ? 10 : EXAM_DURATION_MINUTES) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -117,6 +119,10 @@ export default function QuizScreen() {
   const selectedIndex = answersByIndex[currentIndex] ?? null;
   const hasAnswered = selectedIndex !== null;
   const correct = q && selectedIndex === q.correctIndex;
+  const explanationForCurrent = explanationsByIndex[currentIndex];
+  const explanation = explanationForCurrent?.text ?? null;
+  const explanationError = explanationForCurrent?.error ?? false;
+  const loadingExplanation = loadingExplanationIndex === currentIndex;
   const needsExplanation = hasAnswered && !correct && !fullExam && daily !== '1';
   const explanationReady = explanation !== null || explanationError;
   const canGoBack = currentIndex > 0 && (!needsExplanation || explanationReady);
@@ -138,9 +144,7 @@ export default function QuizScreen() {
     setAnswersByIndex((prev) => ({ ...prev, [idx]: optionIndex }));
     const question = questionsRef.current[idx];
     if (!question || optionIndex === question.correctIndex || fullExam || daily === '1') return;
-    setLoadingExplanation(true);
-    setExplanationError(false);
-    setExplanation(null);
+    setLoadingExplanationIndex(idx);
     generateWrongExplanation(
       question.text,
       question.options,
@@ -148,14 +152,12 @@ export default function QuizScreen() {
       question.correctIndex
     )
       .then((text) => {
-        setExplanation(text);
-        setExplanationError(false);
+        setExplanationsByIndex((prev) => ({ ...prev, [idx]: { text, error: false } }));
       })
       .catch(() => {
-        setExplanation(null);
-        setExplanationError(true);
+        setExplanationsByIndex((prev) => ({ ...prev, [idx]: { text: null, error: true } }));
       })
-      .finally(() => setLoadingExplanation(false));
+      .finally(() => setLoadingExplanationIndex(null));
   };
 
   const buildWrongAnswersFromAnswers = (ans: Record<number, number>, qs: typeof questions): WrongAnswer[] => {
@@ -185,6 +187,8 @@ export default function QuizScreen() {
     const qs = questionsRef.current;
     const correctCountVal = qs.filter((qu, i) => ans[i] === qu.correctIndex).length;
     const finalWrong = buildWrongAnswersFromAnswers(ans, qs);
+    setFinalQuestions(qs);
+    setFinalAnswersByIndex(ans);
     setFinalScore(correctCountVal);
     setFinalWrongAnswers(finalWrong);
     addResult(correctCountVal, qs.length, finalWrong, examLabel);
@@ -250,6 +254,8 @@ export default function QuizScreen() {
     if (isLast && q) {
       const correctCountVal = questions.filter((qu, i) => answersByIndex[i] === qu.correctIndex).length;
       const finalWrong = buildWrongAnswersFromAnswers(answersByIndex, questions);
+      setFinalQuestions(questions);
+      setFinalAnswersByIndex(answersByIndex);
       setFinalScore(correctCountVal);
       setFinalWrongAnswers(finalWrong);
       addResult(correctCountVal, total, finalWrong, examLabel);
@@ -266,31 +272,28 @@ export default function QuizScreen() {
       setFinished(true);
       return;
     }
-    setExplanation(null);
-    setLoadingExplanation(false);
-    setExplanationError(false);
+    setLoadingExplanationIndex(null);
     setCurrentIndex((i) => i + 1);
   };
 
   const handlePrev = () => {
     if (!canGoBack) return;
-    setExplanation(null);
-    setLoadingExplanation(false);
-    setExplanationError(false);
+    setLoadingExplanationIndex(null);
     setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
   const retryExplanation = () => {
     if (!q || selectedIndex === null || fullExam || daily === '1') return;
-    setLoadingExplanation(true);
-    setExplanationError(false);
+    const idx = currentIndex;
+    setLoadingExplanationIndex(idx);
     generateWrongExplanation(q.text, q.options, selectedIndex, q.correctIndex)
       .then((text) => {
-        setExplanation(text);
-        setExplanationError(false);
+        setExplanationsByIndex((prev) => ({ ...prev, [idx]: { text, error: false } }));
       })
-      .catch(() => setExplanationError(true))
-      .finally(() => setLoadingExplanation(false));
+      .catch(() => {
+        setExplanationsByIndex((prev) => ({ ...prev, [idx]: { text: null, error: true } }));
+      })
+      .finally(() => setLoadingExplanationIndex(null));
   };
 
   if (total === 0) {
@@ -346,20 +349,85 @@ export default function QuizScreen() {
             </Text>
           </View>
 
-          {finalWrongAnswers.length > 0 && (
-            <TouchableOpacity
-              style={[styles.wrongBtn, { backgroundColor: c.card, borderColor: c.border }]}
-              onPress={() => {
-                setLastQuizWrong(finalWrongAnswers);
-                router.push('/quiz/yanlis-sorular' as never);
-              }}
-              activeOpacity={0.8}>
-              <MaterialIcons name="assignment" size={22} color={c.error} />
-              <Text style={[styles.wrongBtnText, { color: c.text }]}>
-                Yanlış soruları göster ({finalWrongAnswers.length})
-              </Text>
-              <MaterialIcons name="chevron-right" size={24} color={c.textSecondary} />
-            </TouchableOpacity>
+          {/* Tüm sorular: doğru/yanlış, doğru şık işaretli */}
+          {finalQuestions.length > 0 && (
+            <View style={styles.resultQuestionsWrap}>
+              <Text style={[styles.resultSectionTitle, { color: c.text }]}>Tüm sorular</Text>
+              {finalQuestions.map((question, i) => {
+                const sel = finalAnswersByIndex[i] ?? undefined;
+                const isCorrect = sel !== undefined && sel === question.correctIndex;
+                return (
+                  <View
+                    key={`${question.id}-${i}`}
+                    style={[styles.resultQuestionCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+                    <View style={styles.resultQuestionHeader}>
+                      <Text style={[styles.resultQuestionNum, { color: c.textSecondary }]}>Soru {i + 1}</Text>
+                      <View
+                        style={[
+                          styles.resultQuestionBadge,
+                          { backgroundColor: isCorrect ? c.success + '20', borderColor: isCorrect ? c.success : c.error },
+                        ]}>
+                        <MaterialIcons
+                          name={isCorrect ? 'check-circle' : 'cancel'}
+                          size={18}
+                          color={isCorrect ? c.success : c.error}
+                        />
+                        <Text style={[styles.resultQuestionBadgeText, { color: isCorrect ? c.success : c.error }]}>
+                          {isCorrect ? 'Doğru' : 'Yanlış'}
+                        </Text>
+                      </View>
+                    </View>
+                    {question.imageCode && getQuestionImageSource(question.imageCode) && (
+                      <View style={styles.resultQuestionImageWrap}>
+                        <Image
+                          source={getQuestionImageSource(question.imageCode)!}
+                          style={styles.resultQuestionImage}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    )}
+                    <Text style={[styles.resultQuestionText, { color: c.text }]}>{question.text}</Text>
+                    <View style={styles.resultQuestionOptions}>
+                      {question.options.map((opt, idx) => {
+                        const isCorrectOption = idx === question.correctIndex;
+                        const isUserWrongChoice = sel !== undefined && idx === sel && !isCorrect;
+                        const bg = isCorrectOption
+                          ? c.success + '20'
+                          : isUserWrongChoice
+                            ? c.error + '20'
+                            : 'transparent';
+                        const border = isCorrectOption ? c.success : isUserWrongChoice ? c.error : c.border;
+                        const optImg = question.optionImages?.[idx];
+                        const optImgSource = optImg ? getQuestionImageSource(optImg) : undefined;
+                        return (
+                          <View
+                            key={idx}
+                            style={[
+                              optImgSource ? styles.resultOptionWithImage : styles.resultOptionRow,
+                              { backgroundColor: bg, borderColor: border },
+                            ]}>
+                            {optImgSource ? (
+                              <View style={styles.resultOptionImageRow}>
+                                <Text style={[styles.resultOptionLabel, { color: c.text }]}>
+                                  {['A', 'B', 'C', 'D'][idx]})
+                                </Text>
+                                <Image source={optImgSource} style={styles.resultOptionImage} resizeMode="contain" />
+                              </View>
+                            ) : (
+                              <Text style={[styles.resultOptionText, { color: c.text }]}>
+                                {['A', 'B', 'C', 'D'][idx]}) {opt}
+                              </Text>
+                            )}
+                            {isCorrectOption && <MaterialIcons name="check-circle" size={20} color={c.success} />}
+                            {isUserWrongChoice && <MaterialIcons name="cancel" size={20} color={c.error} />}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
           )}
 
           <TouchableOpacity
@@ -375,6 +443,8 @@ export default function QuizScreen() {
               setCurrentIndex(0);
               setAnswersByIndex({});
               setFinalWrongAnswers([]);
+              setFinalQuestions([]);
+              setFinalAnswersByIndex({});
               setFinished(false);
             }}
             activeOpacity={0.8}>
@@ -794,6 +864,57 @@ const styles = StyleSheet.create({
   resultScore: { fontSize: 32, fontWeight: '700', marginBottom: Spacing.sm },
   resultPuan: { fontSize: 20, fontWeight: '700', marginBottom: Spacing.sm },
   resultSub: { fontSize: 15, textAlign: 'center' },
+  resultQuestionsWrap: { width: '100%', marginTop: Spacing.lg, marginBottom: Spacing.md },
+  resultSectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md, paddingHorizontal: Spacing.sm },
+  resultQuestionCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  resultQuestionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  resultQuestionNum: { fontSize: 14, fontWeight: '600' },
+  resultQuestionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  resultQuestionBadgeText: { fontSize: 14, fontWeight: '700' },
+  resultQuestionImageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
+  resultQuestionImage: { width: 120, height: 100, borderRadius: BorderRadius.sm },
+  resultQuestionText: { fontSize: 15, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.md },
+  resultQuestionOptions: { gap: 8 },
+  resultOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  resultOptionWithImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  resultOptionText: { fontSize: 15, flex: 1 },
+  resultOptionLabel: { fontSize: 15, fontWeight: '600', marginRight: Spacing.sm },
+  resultOptionImageRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  resultOptionImage: { width: 72, height: 56, borderRadius: 8 },
   wrongBtn: {
     flexDirection: 'row',
     alignItems: 'center',

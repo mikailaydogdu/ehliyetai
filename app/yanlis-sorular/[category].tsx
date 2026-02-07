@@ -1,27 +1,46 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
+  Image,
+  Modal,
+  Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
   Text,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useWrongQuestions } from '@/context/WrongQuestionsContext';
+import { submitQuestionReport, type ReportReason } from '@/lib/firebase';
 import type { SavedWrongQuestion } from '@/types';
 import { getQuestionImageSource } from '@/data/tabelaImages';
+
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'soru_yanlis', label: 'Soru yanlış' },
+  { value: 'soru_hatali', label: 'Soru hatalı' },
+  { value: 'cevap_yanlis', label: 'Cevap yanlış' },
+  { value: 'cevap_yanlis_isaretlenmis', label: 'Cevap yanlış işaretlenmiş' },
+  { value: 'diger', label: 'Diğer' },
+];
 
 export default function YanlisSorularCategoryScreen() {
   const { category, categoryName } = useLocalSearchParams<{ category: string; categoryName?: string }>();
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const { wrongQuestions, removeWrongQuestion } = useWrongQuestions();
+  const [showQuestionMenu, setShowQuestionMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
+  const questionCardRef = useRef<View>(null);
 
   const questionsToReview = useMemo(
     () => wrongQuestions.filter((q) => q.categoryId === category),
@@ -113,14 +132,35 @@ export default function YanlisSorularCategoryScreen() {
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: c.text }]}>
-          Soru {currentIndex + 1} / {total}
+          {currentIndex + 1} / {total}
         </Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.headerMenuBtn}
+            onPress={() => setShowQuestionMenu(true)}
+            hitSlop={12}
+            accessibilityLabel="Menü"
+            accessibilityHint="Paylaş veya bildir">
+            <MaterialIcons name="more-vert" size={24} color={c.text} />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={[styles.progressBarBg, { backgroundColor: c.border }]}>
+        <View
+          style={[
+            styles.progressBarFill,
+            { backgroundColor: c.primary, width: `${total > 0 ? ((currentIndex + 1) / total) * 100 : 0}%` },
+          ]}
+        />
       </View>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        <View style={[styles.questionBlock, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+        <View
+          ref={questionCardRef}
+          style={[styles.questionBlock, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+          collapsable={false}>
           {q.imageCode && getQuestionImageSource(q.imageCode) && (
             <View style={styles.signImageWrap}>
               <Image
@@ -194,6 +234,112 @@ export default function YanlisSorularCategoryScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      <Modal
+        visible={showQuestionMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQuestionMenu(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowQuestionMenu(false)}>
+          <View style={[styles.questionMenuCard, { backgroundColor: c.card, borderColor: c.border }]}>
+            <TouchableOpacity
+              style={[styles.questionMenuItem, { borderBottomColor: c.border }]}
+              onPress={() => {
+                setShowQuestionMenu(false);
+                setTimeout(() => {
+                  const node = questionCardRef.current;
+                  if (!node) return;
+                  const fileUri = (uri: string) =>
+                    uri.startsWith('file://') ? uri : 'file://' + uri;
+                  captureRef(node, { format: 'jpg', result: 'tmpfile', quality: 1 })
+                    .then(async (uri) => {
+                      const normalized = fileUri(uri);
+                      const canShare = await Sharing.isAvailableAsync();
+                      if (canShare) {
+                        await Sharing.shareAsync(normalized, { mimeType: 'image/jpeg' });
+                      } else {
+                        await Share.share({ message: q?.questionText ?? '', url: normalized });
+                      }
+                    })
+                    .catch(() => Share.share({ message: q?.questionText ?? '' }));
+                }, 400);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="share" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Paylaş</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.questionMenuItem, { borderBottomColor: c.border }]}
+              onPress={() => {
+                setShowQuestionMenu(false);
+                setShowReportModal(true);
+                setReportReason(null);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="flag" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Bildir</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showReportModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowReportModal(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowReportModal(false)}>
+          <Pressable
+            style={[styles.reportModalCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+            onPress={(e) => e.stopPropagation()}>
+            <Text style={[styles.reportModalTitle, { color: c.text }]}>Bildir</Text>
+            <Text style={[styles.reportModalSubtitle, { color: c.textSecondary }]}>
+              Soruyu neden bildirmek istiyorsunuz?
+            </Text>
+            {REPORT_REASONS.map(({ value, label }) => (
+              <TouchableOpacity
+                key={value}
+                style={[styles.reportReasonRow, { borderBottomColor: c.border }]}
+                onPress={() => setReportReason(value)}
+                activeOpacity={0.7}>
+                <Text style={[styles.reportReasonLabel, { color: c.text }]}>{label}</Text>
+                {reportReason === value && (
+                  <MaterialIcons name="check" size={24} color={c.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <View style={styles.reportModalButtons}>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, { borderColor: c.border }]}
+                onPress={() => setShowReportModal(false)}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnText, { color: c.text }]}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, styles.reportModalBtnPrimary, { backgroundColor: c.primary }]}
+                onPress={() => {
+                  if (!reportReason || !q) return;
+                  submitQuestionReport({
+                    questionId: q.questionId,
+                    reason: reportReason,
+                    questionText: q.questionText,
+                    categoryId: q.categoryId,
+                  })
+                    .then(() => {
+                      setShowReportModal(false);
+                      setReportReason(null);
+                      Alert.alert('Teşekkürler', 'Bildiriminiz alındı.');
+                    })
+                    .catch(() => Alert.alert('Hata', 'Bildirim gönderilemedi. Tekrar deneyin.'));
+                }}
+                disabled={!reportReason}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnTextPrimary, { color: c.primaryContrast }]}>Bildir</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -213,7 +359,73 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: Spacing.sm,
   },
-  headerTitle: { fontSize: 17, fontWeight: '600', flex: 1 },
+  headerTitle: { fontSize: 17, fontWeight: '600', flex: 1, textAlign: 'center' },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    minWidth: 100,
+    justifyContent: 'flex-end',
+  },
+  headerMenuBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  questionMenuCard: {
+    minWidth: 200,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  questionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  questionMenuItemText: { fontSize: 16, fontWeight: '600' },
+  reportModalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.md,
+    overflow: 'hidden',
+  },
+  reportModalTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.xs },
+  reportModalSubtitle: { fontSize: 14, marginBottom: Spacing.md },
+  reportReasonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  reportReasonLabel: { fontSize: 16 },
+  reportModalButtons: { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.lg },
+  reportModalBtn: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  reportModalBtnPrimary: { borderWidth: 0 },
+  reportModalBtnText: { fontSize: 16, fontWeight: '600' },
+  reportModalBtnTextPrimary: { fontSize: 16, fontWeight: '600' },
+  progressBarBg: { height: 4, width: '100%' },
+  progressBarFill: { height: '100%', borderRadius: 2 },
   emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
   emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.sm, textAlign: 'center' },
   backButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10 },

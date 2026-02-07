@@ -1,24 +1,39 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Modal,
+  Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 
-import { BorderRadius, Colors, getCardShadow, Spacing } from '@/constants/theme';
+import { BorderRadius, Colors, getCardShadow, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useContent } from '@/context/ContentContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getQuestionImageSource } from '@/data/tabelaImages';
 import { shuffleArray } from '@/data/mockData';
 import { generateWrongExplanation } from '@/lib/groq';
+import { submitQuestionReport, type ReportReason } from '@/lib/firebase';
 import type { Question } from '@/types';
+
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'soru_yanlis', label: 'Soru yanlış' },
+  { value: 'soru_hatali', label: 'Soru hatalı' },
+  { value: 'cevap_yanlis', label: 'Cevap yanlış' },
+  { value: 'cevap_yanlis_isaretlenmis', label: 'Cevap yanlış işaretlenmiş' },
+  { value: 'diger', label: 'Diğer' },
+];
 
 const PRACTICE_COUNT = 15;
 const CATEGORY_TO_SOURCE: Record<string, string> = { kurallar: 'trafik', bakim: 'motor' };
@@ -40,11 +55,16 @@ export default function CalismaCategoryScreen() {
   const [sessionKey, setSessionKey] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [answersByIndex, setAnswersByIndex] = useState<Record<number, number>>({});
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
   const [explanationError, setExplanationError] = useState(false);
+  const [showQuestionMenu, setShowQuestionMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
+  const questionCardRef = useRef<View>(null);
 
   /** Seçilen kategorilerden 15 karışık soru */
   const questions: Question[] = useMemo(() => {
@@ -63,6 +83,7 @@ export default function CalismaCategoryScreen() {
   useEffect(() => {
     setCurrentIndex(0);
     setSelectedIndex(null);
+    setAnswersByIndex({});
     setCorrectCount(0);
     setFinished(false);
     setExplanation(null);
@@ -73,6 +94,7 @@ export default function CalismaCategoryScreen() {
   const handleSelectOption = (optionIndex: number) => {
     if (hasAnswered) return;
     setSelectedIndex(optionIndex);
+    setAnswersByIndex((prev) => ({ ...prev, [currentIndex]: optionIndex }));
     setExplanation(null);
     setExplanationError(false);
     if (q && optionIndex === q.correctIndex) {
@@ -139,17 +161,99 @@ export default function CalismaCategoryScreen() {
             </Text>
             <Text style={[styles.resultPuan, { color: c.primary }]}>{puan} puan</Text>
           </View>
+
+          {/* Tüm sorular: doğru/yanlış, doğru şık işaretli */}
+          {questions.length > 0 && (
+            <View style={styles.resultQuestionsWrap}>
+              <Text style={[styles.resultSectionTitle, { color: c.text }]}>Tüm sorular</Text>
+              {questions.map((question, i) => {
+                const sel = answersByIndex[i] ?? undefined;
+                const isCorrect = sel !== undefined && sel === question.correctIndex;
+                return (
+                  <View
+                    key={`${question.id}-${i}`}
+                    style={[styles.resultQuestionCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+                    <View style={styles.resultQuestionHeader}>
+                      <Text style={[styles.resultQuestionNum, { color: c.textSecondary }]}>Soru {i + 1}</Text>
+                      <View
+                        style={[
+                          styles.resultQuestionBadge,
+                          { backgroundColor: isCorrect ? c.success + '20', borderColor: isCorrect ? c.success : c.error },
+                        ]}>
+                        <MaterialIcons
+                          name={isCorrect ? 'check-circle' : 'cancel'}
+                          size={18}
+                          color={isCorrect ? c.success : c.error}
+                        />
+                        <Text style={[styles.resultQuestionBadgeText, { color: isCorrect ? c.success : c.error }]}>
+                          {isCorrect ? 'Doğru' : 'Yanlış'}
+                        </Text>
+                      </View>
+                    </View>
+                    {question.imageCode && getQuestionImageSource(question.imageCode) && (
+                      <View style={styles.resultQuestionImageWrap}>
+                        <Image
+                          source={getQuestionImageSource(question.imageCode)!}
+                          style={styles.resultQuestionImage}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    )}
+                    <Text style={[styles.resultQuestionText, { color: c.text }]}>{question.text}</Text>
+                    <View style={styles.resultQuestionOptions}>
+                      {question.options.map((opt, idx) => {
+                        const isCorrectOption = idx === question.correctIndex;
+                        const isUserWrongChoice = sel !== undefined && idx === sel && !isCorrect;
+                        const bg = isCorrectOption
+                          ? c.success + '20'
+                          : isUserWrongChoice
+                            ? c.error + '20'
+                            : 'transparent';
+                        const border = isCorrectOption ? c.success : isUserWrongChoice ? c.error : c.border;
+                        const optImg = question.optionImages?.[idx];
+                        const optImgSource = optImg ? getQuestionImageSource(optImg) : undefined;
+                        return (
+                          <View
+                            key={idx}
+                            style={[
+                              optImgSource ? styles.resultOptionWithImage : styles.resultOptionRow,
+                              { backgroundColor: bg, borderColor: border },
+                            ]}>
+                            {optImgSource ? (
+                              <View style={styles.resultOptionImageRow}>
+                                <Text style={[styles.resultOptionLabel, { color: c.text }]}>
+                                  {['A', 'B', 'C', 'D'][idx]})
+                                </Text>
+                                <Image source={optImgSource} style={styles.resultOptionImage} resizeMode="contain" />
+                              </View>
+                            ) : (
+                              <Text style={[styles.resultOptionText, { color: c.text }]}>
+                                {['A', 'B', 'C', 'D'][idx]}) {opt}
+                              </Text>
+                            )}
+                            {isCorrectOption && <MaterialIcons name="check-circle" size={20} color={c.success} />}
+                            {isUserWrongChoice && <MaterialIcons name="cancel" size={20} color={c.error} />}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           <TouchableOpacity
             style={[styles.primaryBtn, { backgroundColor: c.primary }]}
-            onPress={restart}
+            onPress={() => router.back()}
             activeOpacity={0.8}>
-            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Tekrar çöz</Text>
+            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Bitir</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.outlineBtn, { borderColor: c.border }]}
-            onPress={() => router.back()}
+            onPress={restart}
             activeOpacity={0.8}>
-            <Text style={[styles.outlineBtnText, { color: c.text }]}>Kategorilere dön</Text>
+            <Text style={[styles.outlineBtnText, { color: c.text }]}>Tekrar</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -179,24 +283,37 @@ export default function CalismaCategoryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top']}>
-      {/* Header */}
+      {/* Header: quiz ile aynı (geri, 1/10, doğru sayısı, 3 nokta) */}
       <View style={[styles.header, { borderBottomColor: c.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: c.text }]}>
-          Soru {currentIndex + 1} / {total}
+          {currentIndex + 1} / {total}
         </Text>
         <View style={styles.headerRight}>
-          <MaterialIcons name="check-circle" size={18} color={c.success} />
-          <Text style={[styles.headerCorrect, { color: c.success }]}>{correctCount}</Text>
+          <View style={styles.headerCorrectWrap}>
+            <MaterialIcons name="check-circle" size={18} color={c.success} />
+            <Text style={[styles.headerCorrectText, { color: c.success }]}>{correctCount} doğru</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.headerMenuBtn}
+            onPress={() => setShowQuestionMenu(true)}
+            hitSlop={12}
+            accessibilityLabel="Menü"
+            accessibilityHint="Paylaş veya bildir">
+            <MaterialIcons name="more-vert" size={24} color={c.text} />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Progress bar */}
-      <View style={[styles.progressBg, { backgroundColor: c.border }]}>
+      {/* Progress bar: quiz ile aynı */}
+      <View style={[styles.progressBarBg, { backgroundColor: c.border }]}>
         <View
-          style={[styles.progressFill, { backgroundColor: c.primary, width: `${((currentIndex + 1) / total) * 100}%` }]}
+          style={[
+            styles.progressBarFill,
+            { backgroundColor: c.primary, width: `${total > 0 ? ((currentIndex + 1) / total) * 100 : 0}%` },
+          ]}
         />
       </View>
 
@@ -204,6 +321,11 @@ export default function CalismaCategoryScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
+        {/* Kart: paylaş için ref ile sarıyoruz */}
+        <View
+          ref={questionCardRef}
+          style={[styles.optionsCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+          collapsable={false}>
         {/* Soru görseli */}
         {imgSrc && (
           <View style={styles.imageWrap}>
@@ -214,7 +336,7 @@ export default function CalismaCategoryScreen() {
         <Text style={[styles.questionText, { color: c.text }]}>{q.text}</Text>
 
         {/* Şıklar */}
-        <View style={[styles.optionsCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+        <View style={styles.optionsInner}>
           {q.options.map((opt, idx) => {
             const isSel = selectedIndex === idx;
             const isCor = idx === q.correctIndex;
@@ -258,6 +380,7 @@ export default function CalismaCategoryScreen() {
             );
           })}
         </View>
+        </View>
 
         {/* Yanlış cevapta açıklama */}
         {hasAnswered && !isCorrect && (
@@ -296,6 +419,112 @@ export default function CalismaCategoryScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      <Modal
+        visible={showQuestionMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQuestionMenu(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowQuestionMenu(false)}>
+          <View style={[styles.questionMenuCard, { backgroundColor: c.card, borderColor: c.border }]}>
+            <TouchableOpacity
+              style={[styles.questionMenuItem, { borderBottomColor: c.border }]}
+              onPress={async () => {
+                setShowQuestionMenu(false);
+                setTimeout(() => {
+                  const node = questionCardRef.current;
+                  if (!node) return;
+                  const fileUri = (uri: string) =>
+                    uri.startsWith('file://') ? uri : 'file://' + uri;
+                  captureRef(node, { format: 'jpg', result: 'tmpfile', quality: 1 })
+                    .then(async (uri) => {
+                      const normalized = fileUri(uri);
+                      const canShare = await Sharing.isAvailableAsync();
+                      if (canShare) {
+                        await Sharing.shareAsync(normalized, { mimeType: 'image/jpeg' });
+                      } else {
+                        await Share.share({ message: q?.text ?? '', url: normalized });
+                      }
+                    })
+                    .catch(() => Share.share({ message: q?.text ?? '' }));
+                }, 400);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="share" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Paylaş</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.questionMenuItem, { borderBottomColor: c.border }]}
+              onPress={() => {
+                setShowQuestionMenu(false);
+                setShowReportModal(true);
+                setReportReason(null);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="flag" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Bildir</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showReportModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowReportModal(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowReportModal(false)}>
+          <Pressable
+            style={[styles.reportModalCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+            onPress={(e) => e.stopPropagation()}>
+            <Text style={[styles.reportModalTitle, { color: c.text }]}>Bildir</Text>
+            <Text style={[styles.reportModalSubtitle, { color: c.textSecondary }]}>
+              Soruyu neden bildirmek istiyorsunuz?
+            </Text>
+            {REPORT_REASONS.map(({ value, label }) => (
+              <TouchableOpacity
+                key={value}
+                style={[styles.reportReasonRow, { borderBottomColor: c.border }]}
+                onPress={() => setReportReason(value)}
+                activeOpacity={0.7}>
+                <Text style={[styles.reportReasonLabel, { color: c.text }]}>{label}</Text>
+                {reportReason === value && (
+                  <MaterialIcons name="check" size={24} color={c.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <View style={styles.reportModalButtons}>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, { borderColor: c.border }]}
+                onPress={() => setShowReportModal(false)}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnText, { color: c.text }]}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, styles.reportModalBtnPrimary, { backgroundColor: c.primary }]}
+                onPress={() => {
+                  if (!reportReason || !q) return;
+                  submitQuestionReport({
+                    questionId: q.id,
+                    reason: reportReason,
+                    questionText: q.text,
+                    categoryId: q.categoryId,
+                  })
+                    .then(() => {
+                      setShowReportModal(false);
+                      setReportReason(null);
+                      Alert.alert('Teşekkürler', 'Bildiriminiz alındı.');
+                    })
+                    .catch(() => Alert.alert('Hata', 'Bildirim gönderilemedi. Tekrar deneyin.'));
+                }}
+                disabled={!reportReason}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnTextPrimary, { color: c.primaryContrast }]}>Bildir</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -306,16 +535,89 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: Spacing.md, marginBottom: Spacing.lg },
 
   header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
   },
-  backBtn: { minWidth: 44, minHeight: 44, justifyContent: 'center', marginRight: Spacing.sm },
+  backBtn: {
+    minWidth: TOUCH_TARGET_MIN,
+    minHeight: TOUCH_TARGET_MIN,
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
   headerTitle: { fontSize: 17, fontWeight: '600', flex: 1, textAlign: 'center' },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 44, justifyContent: 'flex-end' },
-  headerCorrect: { fontSize: 15, fontWeight: '700' },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    minWidth: 100,
+    justifyContent: 'flex-end',
+  },
+  headerCorrectWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerCorrectText: { fontSize: 14, fontWeight: '600' },
+  headerMenuBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.sm,
+  },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  questionMenuCard: {
+    minWidth: 200,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  questionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  questionMenuItemText: { fontSize: 16, fontWeight: '600' },
+  reportModalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.md,
+    overflow: 'hidden',
+  },
+  reportModalTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.xs },
+  reportModalSubtitle: { fontSize: 14, marginBottom: Spacing.md },
+  reportReasonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  reportReasonLabel: { fontSize: 16 },
+  reportModalButtons: { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.lg },
+  reportModalBtn: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  reportModalBtnPrimary: { borderWidth: 0 },
+  reportModalBtnText: { fontSize: 16, fontWeight: '600' },
+  reportModalBtnTextPrimary: { fontSize: 16, fontWeight: '600' },
 
-  progressBg: { height: 4, width: '100%' },
-  progressFill: { height: '100%', borderRadius: 2 },
+  progressBarBg: { height: 4, width: '100%' },
+  progressBarFill: { height: '100%', borderRadius: 2 },
 
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.md },
@@ -324,7 +626,8 @@ const styles = StyleSheet.create({
   questionImage: { width: 200, height: 160, borderRadius: 8 },
   questionText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.lg },
 
-  optionsCard: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, marginBottom: Spacing.md, gap: 8 },
+  optionsCard: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, marginBottom: Spacing.md },
+  optionsInner: { gap: 8 },
   option: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingVertical: 12, paddingHorizontal: Spacing.md, borderRadius: 10, borderWidth: 1,
@@ -364,6 +667,57 @@ const styles = StyleSheet.create({
   resultTitle: { fontSize: 18, fontWeight: '600', marginBottom: Spacing.sm },
   resultScore: { fontSize: 32, fontWeight: '700', marginBottom: Spacing.sm },
   resultPuan: { fontSize: 20, fontWeight: '700' },
+  resultQuestionsWrap: { width: '100%', marginTop: Spacing.lg, marginBottom: Spacing.md },
+  resultSectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md, paddingHorizontal: Spacing.sm },
+  resultQuestionCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  resultQuestionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  resultQuestionNum: { fontSize: 14, fontWeight: '600' },
+  resultQuestionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  resultQuestionBadgeText: { fontSize: 14, fontWeight: '700' },
+  resultQuestionImageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
+  resultQuestionImage: { width: 120, height: 100, borderRadius: BorderRadius.sm },
+  resultQuestionText: { fontSize: 15, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.md },
+  resultQuestionOptions: { gap: 8 },
+  resultOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  resultOptionWithImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  resultOptionText: { fontSize: 15, flex: 1 },
+  resultOptionLabel: { fontSize: 15, fontWeight: '600', marginRight: Spacing.sm },
+  resultOptionImageRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  resultOptionImage: { width: 72, height: 56, borderRadius: 8 },
   primaryBtn: {
     paddingVertical: 14, paddingHorizontal: Spacing.xl, borderRadius: BorderRadius.md,
     alignSelf: 'stretch', alignItems: 'center',
