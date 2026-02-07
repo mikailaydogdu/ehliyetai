@@ -59,6 +59,8 @@ export interface WrongAnswer {
   imageCode?: string;
   /** Şık görselleri. */
   optionImages?: (string | undefined)[];
+  /** Yapay zeka ile üretilen, soruyla ilgili not (yerelde saklanır). */
+  aiNote?: string;
 }
 
 /** Kaydedilmiş yanlış soru – tekrar çözme ekranında gösterilmek üzere options/imageCode ile. */

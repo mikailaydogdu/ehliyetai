@@ -2,10 +2,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BorderRadius, Colors, getCardShadow, Spacing } from '@/constants/theme';
+import { showRewardedAd } from '@/lib/ads';
 import { useExamDate } from '@/context/ExamDateContext';
 import { useStats } from '@/context/StatsContext';
 import { useWrongQuestions } from '@/context/WrongQuestionsContext';
@@ -30,6 +31,7 @@ export default function AnasayfaScreen() {
     examDate ? new Date(examDate) : new Date()
   );
   const [showDailyExamPopup, setShowDailyExamPopup] = useState(false);
+  const [adLoading, setAdLoading] = useState(false);
 
   const openDatePicker = () => {
     setPickerDate(examDate ? new Date(examDate) : new Date());
@@ -162,12 +164,12 @@ export default function AnasayfaScreen() {
             style={[styles.twinCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
             onPress={() => router.push('/yanlis-sorular' as never)}
             activeOpacity={0.85}
-            accessibilityLabel="Yanlış Yapılan Sorular"
+            accessibilityLabel="Yanlışlar"
             accessibilityHint="Yanlış yaptığınız soruları tekrar çözün">
             <View style={[styles.twinIconWrap, { backgroundColor: c.selectedBg }]}>
               <MaterialIcons name="error-outline" size={26} color={c.primary} />
             </View>
-            <Text style={[styles.twinTitle, { color: c.text }]}>Yanlış Sorular</Text>
+            <Text style={[styles.twinTitle, { color: c.text }]}>Yanlışlar</Text>
             <Text style={[styles.twinSubtitle, { color: c.textSecondary }]} numberOfLines={2}>
               {wrongQuestions.length > 0
                 ? `${wrongQuestions.length} soru`
@@ -199,14 +201,14 @@ export default function AnasayfaScreen() {
         visible={showDailyExamPopup}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowDailyExamPopup(false)}>
+        onRequestClose={() => { setShowDailyExamPopup(false); setAdLoading(false); }}>
         <Pressable
           style={styles.modalOverlay}
-          onPress={() => setShowDailyExamPopup(false)}>
+          onPress={() => { setShowDailyExamPopup(false); setAdLoading(false); }}>
           <Pressable style={[styles.modalCard, { backgroundColor: c.card, borderColor: c.border }]} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: c.text }]}>Sınava devam etmek için</Text>
-              <TouchableOpacity onPress={() => setShowDailyExamPopup(false)} hitSlop={12} style={styles.modalClose}>
+              <TouchableOpacity onPress={() => { setShowDailyExamPopup(false); setAdLoading(false); }} hitSlop={12} style={styles.modalClose}>
                 <MaterialIcons name="close" size={24} color={c.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -216,17 +218,37 @@ export default function AnasayfaScreen() {
             <TouchableOpacity
               style={[styles.modalBtn, styles.modalBtnPrimary, { backgroundColor: c.primary }]}
               onPress={() => {
-                setShowDailyExamPopup(false);
-                router.push({ pathname: '/sinav-baslangic', params: { daily: '1' } } as never);
+                setAdLoading(true);
+                showRewardedAd({
+                  onRewarded: () => {
+                    setShowDailyExamPopup(false);
+                    router.push({ pathname: '/sinav-baslangic', params: { daily: '1' } } as never);
+                  },
+                  onDone: (result) => {
+                    setAdLoading(false);
+                    if (result === 'error') setShowDailyExamPopup(false);
+                  },
+                });
               }}
+              disabled={adLoading}
               activeOpacity={0.8}>
-              <MaterialIcons name="play-circle-outline" size={22} color={c.primaryContrast} />
-              <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam izle</Text>
+              {adLoading ? (
+                <>
+                  <ActivityIndicator size="small" color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam yükleniyor</Text>
+                </>
+              ) : (
+                <>
+                  <MaterialIcons name="play-circle-outline" size={22} color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam izle</Text>
+                </>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.modalBtn, styles.modalBtnOutline, { borderColor: c.border }]}
               onPress={() => {
                 setShowDailyExamPopup(false);
+                setAdLoading(false);
                 router.push('/pro-uyelik' as never);
               }}
               activeOpacity={0.8}>
@@ -235,7 +257,7 @@ export default function AnasayfaScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalCancelWrap}
-              onPress={() => setShowDailyExamPopup(false)}
+              onPress={() => { setShowDailyExamPopup(false); setAdLoading(false); }}
               activeOpacity={0.7}>
               <Text style={[styles.modalCancel, { color: c.textSecondary }]}>İptal</Text>
             </TouchableOpacity>

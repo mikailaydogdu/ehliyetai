@@ -1,9 +1,9 @@
 /**
  * Firebase Realtime Database bağlantısı.
- * Sorular ve notlar buradan okunur.
+ * Sorular ve notlar buradan okunur; soru bildirimleri (reports) yazılır.
  */
 
-import { getDatabase, ref, get, type Database } from 'firebase/database';
+import { getDatabase, ref, get, push, set, type Database } from 'firebase/database';
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 
 const FIREBASE_CONFIG = {
@@ -41,4 +41,30 @@ export async function fetchQuestionsFromFirebase(): Promise<unknown[]> {
 /** Firebase'den notes dizisini alır. */
 export async function fetchNotesFromFirebase(): Promise<unknown[]> {
   return fetchPath('notes');
+}
+
+export type ReportReason =
+  | 'soru_yanlis'
+  | 'soru_hatali'
+  | 'cevap_yanlis'
+  | 'cevap_yanlis_isaretlenmis'
+  | 'diger';
+
+/** Soru bildirimi: reports path'ine yeni kayıt ekler. */
+export async function submitQuestionReport(payload: {
+  questionId: string;
+  reason: ReportReason;
+  questionText?: string;
+  categoryId?: string;
+}): Promise<void> {
+  const database = getDb();
+  const reportsRef = ref(database, 'reports');
+  const newRef = push(reportsRef);
+  await set(newRef, {
+    questionId: payload.questionId,
+    reason: payload.reason,
+    questionText: payload.questionText ?? null,
+    categoryId: payload.categoryId ?? null,
+    createdAt: new Date().toISOString(),
+  });
 }

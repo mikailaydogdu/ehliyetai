@@ -6,6 +6,7 @@ interface WrongQuestionsContextType {
   wrongQuestions: SavedWrongQuestion[];
   addWrongQuestions: (items: WrongAnswer[]) => Promise<void>;
   removeWrongQuestion: (questionId: string) => Promise<void>;
+  updateWrongQuestionNote: (questionId: string, note: string) => Promise<void>;
   reloadFromStorage: () => Promise<void>;
 }
 
@@ -47,6 +48,15 @@ export function WrongQuestionsProvider({ children }: { children: React.ReactNode
     [wrongQuestions]
   );
 
+  const updateWrongQuestionNote = useCallback(async (questionId: string, note: string) => {
+    const list = await getWrongQuestions();
+    const updated = list.map((q) =>
+      q.questionId === questionId ? { ...q, aiNote: note } : q
+    );
+    setWrongQuestionsState(updated);
+    await setWrongQuestionsStorage(updated);
+  }, []);
+
   const reloadFromStorage = useCallback(async () => {
     const list = await getWrongQuestions();
     setWrongQuestionsState(list);
@@ -56,6 +66,7 @@ export function WrongQuestionsProvider({ children }: { children: React.ReactNode
     wrongQuestions,
     addWrongQuestions,
     removeWrongQuestion,
+    updateWrongQuestionNote,
     reloadFromStorage,
   };
 

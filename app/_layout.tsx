@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
+import Constants from 'expo-constants';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import 'react-native-reanimated';
@@ -69,7 +70,7 @@ function RootStack() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="sinav-baslangic" options={{ title: 'Sınav Başlangıç' }} />
           <Stack.Screen name="quiz" options={{ title: 'Sınav', gestureEnabled: false }} />
-          <Stack.Screen name="yanlis-sorular" options={{ title: 'Yanlış Yaptığım Sorular' }} />
+          <Stack.Screen name="yanlis-sorular" options={{ title: 'Yanlışlar' }} />
           <Stack.Screen name="profil-guncelleme" options={{ title: 'Profil Güncelleme' }} />
           <Stack.Screen name="yardim" options={{ title: 'Yardım' }} />
           <Stack.Screen name="istatistikler" options={{ title: 'İstatistikler' }} />
@@ -87,9 +88,22 @@ function RootStack() {
 
 SplashScreen.preventAutoHideAsync();
 
+function AdMobInit() {
+  useEffect(() => {
+    // Expo Go'da AdMob native modülü yok; sadece development/production build'de başlat
+    if (Platform.OS === 'android' && Constants.appOwnership !== 'expo') {
+      import('react-native-google-mobile-ads')
+        .then(({ default: mobileAds }) => mobileAds().initialize())
+        .catch(() => {});
+    }
+  }, []);
+  return null;
+}
+
 export default function RootLayout() {
   return (
     <ErrorBoundary>
+      <AdMobInit />
       <ThemeProvider>
         <NetworkProvider>
           <AuthProvider>

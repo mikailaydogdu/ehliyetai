@@ -6,13 +6,9 @@ import { Pressable } from 'react-native';
 
 import { BorderRadius, Colors, getCardShadow, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
 import {
-  EXAM_DRIVING_ATTEMPTS,
   EXAM_DURATION_MINUTES,
   EXAM_ILK_YARDIM,
   EXAM_MOTOR,
-  EXAM_PASS_MIN_CORRECT,
-  EXAM_PASS_PERCENT,
-  EXAM_THEORY_ATTEMPTS,
   EXAM_TOTAL_QUESTIONS,
   EXAM_TRAFIK,
   EXAM_TRAFIK_ADABI,
@@ -140,28 +136,6 @@ export default function SinavBaslangicScreen() {
                 <Text style={[styles.infoValue, { color: c.primary }]}>{EXAM_TRAFIK_ADABI} soru</Text>
               </View>
             </View>
-
-            <View
-              style={[
-                styles.passCard,
-                { backgroundColor: c.card, borderColor: c.border, ...getCardShadow(c) },
-              ]}>
-              <Text style={[styles.passTitle, { color: c.text }]}>Geçme koşulu</Text>
-              <Text style={[styles.passText, { color: c.textSecondary }]}>
-                En az {EXAM_PASS_MIN_CORRECT} doğru ({EXAM_PASS_PERCENT} puan). Yanlış cevaplar doğruyu götürmez.
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.rightsCard,
-                { backgroundColor: c.card, borderColor: c.border, ...getCardShadow(c) },
-              ]}>
-              <Text style={[styles.rightsTitle, { color: c.text }]}>Sınav hakları</Text>
-              <Text style={[styles.rightsText, { color: c.textSecondary }]}>
-                Teorik: {EXAM_THEORY_ATTEMPTS} hak · Direksiyon: {EXAM_DRIVING_ATTEMPTS} hak. Tümü bitince dosya yanar, yeniden kurs gerekir.
-              </Text>
-            </View>
           </>
         )}
 
@@ -241,17 +215,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
   },
-  passTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   passText: { fontSize: 13, lineHeight: 20 },
-  rightsCard: {
-    width: '100%',
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    padding: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  rightsTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  rightsText: { fontSize: 13, lineHeight: 20 },
   startButton: {
     width: '100%',
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -8,11 +9,15 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, getCardShadow, Spacing, BorderRadius, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useStats } from '@/context/StatsContext';
 
+const PAGE_SIZE = 10;
+
 export default function IstatistiklerScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
   const { results } = useStats();
+  const [visibleExams, setVisibleExams] = useState(PAGE_SIZE);
+  const [visibleCategories, setVisibleCategories] = useState(PAGE_SIZE);
 
   const wrongByCategory: Record<string, number> = {};
   let totalWrong = 0;
@@ -31,7 +36,7 @@ export default function IstatistiklerScreen() {
       percent: totalWrong > 0 ? Math.round((count / totalWrong) * 100) : 0,
     }));
 
-  const lastExams = results.slice(0, 10);
+  const lastExamsAll = [...results].reverse();
   const formatDate = (iso: string) => {
     try {
       const d = new Date(iso);
@@ -57,17 +62,18 @@ export default function IstatistiklerScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
-        {lastExams.length > 0 && (
+        {lastExamsAll.length > 0 && (
           <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c), { marginBottom: Spacing.md }]}>
             <Text style={[styles.cardTitle, { color: c.text }]}>Son sınavlar</Text>
             <Text style={[styles.cardSubtitle, { color: c.textSecondary }]}>
-              Son {lastExams.length} sınavın puanı (doğru / toplam).
+              Son sınavların puanı (doğru / toplam).
             </Text>
-            {lastExams.map((r, i) => {
+            {lastExamsAll.slice(0, visibleExams).map((r, i) => {
               const pct = r.totalQuestions > 0 ? Math.round((r.score / r.totalQuestions) * 100) : 0;
               const barWidth = r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0;
+              const isLast = i === Math.min(visibleExams, lastExamsAll.length) - 1;
               return (
-                <View key={r.id} style={[styles.examRow, { borderBottomColor: c.border }, i === lastExams.length - 1 && styles.examRowLast]}>
+                <View key={r.id} style={[styles.examRow, { borderBottomColor: c.border }, isLast && styles.examRowLast]}>
                   <Text style={[styles.examDate, { color: c.textSecondary }]}>{formatDate(r.date)}</Text>
                   <View style={[styles.examBarBg, { backgroundColor: c.border }]}>
                     <View
@@ -83,6 +89,15 @@ export default function IstatistiklerScreen() {
                 </View>
               );
             })}
+            {lastExamsAll.length > visibleExams && (
+              <TouchableOpacity
+                style={[styles.loadMoreBtn, { borderColor: c.border }]}
+                onPress={() => setVisibleExams((n) => n + PAGE_SIZE)}
+                activeOpacity={0.7}>
+                <Text style={[styles.loadMoreText, { color: c.primary }]}>Daha fazla</Text>
+                <MaterialIcons name="expand-more" size={24} color={c.primary} />
+              </TouchableOpacity>
+            )}
           </View>
         )}
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
@@ -96,7 +111,7 @@ export default function IstatistiklerScreen() {
                 <Text style={[styles.totalLabel, { color: c.textSecondary }]}>Toplam yanlış cevap</Text>
                 <Text style={[styles.totalValue, { color: c.error }]}>{totalWrong}</Text>
               </View>
-              {categoryStats.map(({ name, count, percent }) => (
+              {categoryStats.slice(0, visibleCategories).map(({ name, count, percent }) => (
                 <View key={name} style={[styles.categoryRow, { borderBottomColor: c.border }]}>
                   <Text style={[styles.categoryName, { color: c.text }]} numberOfLines={1}>{name}</Text>
                   <View style={styles.categoryRight}>
@@ -105,10 +120,19 @@ export default function IstatistiklerScreen() {
                   </View>
                 </View>
               ))}
+              {categoryStats.length > visibleCategories && (
+                <TouchableOpacity
+                  style={[styles.loadMoreBtn, { borderColor: c.border }]}
+                  onPress={() => setVisibleCategories((n) => n + PAGE_SIZE)}
+                  activeOpacity={0.7}>
+                  <Text style={[styles.loadMoreText, { color: c.primary }]}>Daha fazla</Text>
+                  <MaterialIcons name="expand-more" size={24} color={c.primary} />
+                </TouchableOpacity>
+              )}
               <View style={[styles.chartSection, { borderTopColor: c.border }]}>
                 <Text style={[styles.chartTitle, { color: c.text }]}>Dağılım (yüzde)</Text>
                 <View style={styles.chartBars}>
-                  {categoryStats.map(({ name, count, percent }) => {
+                  {categoryStats.slice(0, visibleCategories).map(({ name, count, percent }) => {
                     const barWidthPercent = totalWrong > 0 ? (count / totalWrong) * 100 : 0;
                     return (
                       <View key={name} style={styles.chartRow}>
@@ -210,4 +234,15 @@ const styles = StyleSheet.create({
   examBarBg: { flex: 1, height: 16, borderRadius: 8, overflow: 'hidden' },
   examBarFill: { height: '100%', borderRadius: 8 },
   examScore: { fontSize: 13, fontWeight: '600', minWidth: 56, textAlign: 'right' },
+  loadMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+  },
+  loadMoreText: { fontSize: 16, fontWeight: '600' },
 });

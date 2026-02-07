@@ -26,7 +26,7 @@ type GridItem = {
 const GRID_ITEMS: GridItem[] = [
   { id: 'istatistikler', label: 'İstatistikler', icon: 'bar-chart', path: '/istatistikler' },
   { id: 'yardim', label: 'Yardım', icon: 'help-outline', path: '/yardim' },
-  { id: 'yanlis', label: 'Yanlış Yaptığım Sorular', icon: 'assignment', path: '/yanlis-sorular' },
+  { id: 'yanlis', label: 'Yanlışlar', icon: 'assignment', path: '/yanlis-sorular' },
   { id: 'hakkinda', label: 'Uygulama Hakkında', icon: 'info', path: '/uygulama-hakkinda' },
 ];
 

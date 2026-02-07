@@ -8,6 +8,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -15,6 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -32,7 +34,17 @@ import { useWrongQuestions } from '@/context/WrongQuestionsContext';
 import { useLastQuizWrong } from '@/context/LastQuizWrongContext';
 import { markFullExamCompleted } from '@/lib/localStorage';
 import { generateWrongExplanation } from '@/lib/groq';
+import { submitQuestionReport, type ReportReason } from '@/lib/firebase';
 import type { WrongAnswer, Question } from '@/types';
+import { captureRef } from 'react-native-view-shot';
+
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'soru_yanlis', label: 'Soru yanlış' },
+  { value: 'soru_hatali', label: 'Soru hatalı' },
+  { value: 'cevap_yanlis', label: 'Cevap yanlış' },
+  { value: 'cevap_yanlis_isaretlenmis', label: 'Cevap yanlış işaretlenmiş' },
+  { value: 'diger', label: 'Diğer' },
+];
 
 export default function QuizScreen() {
   const { category, daily, fullExam } = useLocalSearchParams<{ category?: string; daily?: string; fullExam?: string }>();
@@ -41,7 +53,7 @@ export default function QuizScreen() {
   const insets = useSafeAreaInsets();
   const { categories, getQuestionsByCategory, getMixedQuestionsForQuiz, getDailyQuizQuestions, isContentLoading } = useContent();
   const { addResult } = useStats();
-  const { addWrongQuestions } = useWrongQuestions();
+  const { addWrongQuestions, updateWrongQuestionNote } = useWrongQuestions();
   const { setWrongAnswers: setLastQuizWrong } = useLastQuizWrong();
 
   const getCategoryName = (categoryId: string) =>
@@ -64,8 +76,12 @@ export default function QuizScreen() {
   const [loadingExplanation, setLoadingExplanation] = useState(false);
   const [explanationError, setExplanationError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showQuestionMenu, setShowQuestionMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
   const loadedForKeyRef = useRef<string | null>(null);
   const currentIndexRef = useRef(0);
+  const questionCardRef = useRef<View>(null);
 
   useEffect(() => {
     if (isContentLoading) return;
@@ -101,8 +117,10 @@ export default function QuizScreen() {
   const selectedIndex = answersByIndex[currentIndex] ?? null;
   const hasAnswered = selectedIndex !== null;
   const correct = q && selectedIndex === q.correctIndex;
-  const canGoBack = currentIndex > 0;
-  const canGoNext = hasAnswered;
+  const needsExplanation = hasAnswered && !correct && !fullExam && daily !== '1';
+  const explanationReady = explanation !== null || explanationError;
+  const canGoBack = currentIndex > 0 && (!needsExplanation || explanationReady);
+  const canGoNext = hasAnswered && (!needsExplanation || explanationReady);
   const isFullExam = (!category && daily !== '1') || !!fullExam;
   const showResult = (!isFullExam && hasAnswered) || (daily === '1' && hasAnswered);
   const correctCountSoFar = questions.filter((qu, i) => answersByIndex[i] === qu.correctIndex).length;
@@ -171,6 +189,11 @@ export default function QuizScreen() {
     setFinalWrongAnswers(finalWrong);
     addResult(correctCountVal, qs.length, finalWrong, examLabel);
     addWrongQuestions(finalWrong);
+    finalWrong.forEach((q) => {
+      generateWrongExplanation(q.questionText, q.options ?? [], q.selectedIndex, q.correctIndex)
+        .then((note) => updateWrongQuestionNote(q.questionId, note))
+        .catch(() => {});
+    });
     if (fullExam) {
       const num = parseInt(fullExam, 10);
       if (num >= 1 && num <= 20) markFullExamCompleted(num);
@@ -231,6 +254,11 @@ export default function QuizScreen() {
       setFinalWrongAnswers(finalWrong);
       addResult(correctCountVal, total, finalWrong, examLabel);
       addWrongQuestions(finalWrong);
+      finalWrong.forEach((q) => {
+        generateWrongExplanation(q.questionText, q.options ?? [], q.selectedIndex, q.correctIndex)
+          .then((note) => updateWrongQuestionNote(q.questionId, note))
+          .catch(() => {});
+      });
       if (fullExam) {
         const num = parseInt(fullExam, 10);
         if (num >= 1 && num <= 20) markFullExamCompleted(num);
@@ -368,7 +396,7 @@ export default function QuizScreen() {
           <MaterialIcons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: c.text }]}>
-          Soru {currentIndex + 1} / {total}
+          {currentIndex + 1} / {total}
         </Text>
         <View style={styles.headerRight}>
           <View style={styles.headerTimerWrap}>
@@ -383,6 +411,14 @@ export default function QuizScreen() {
               <Text style={[styles.headerCorrectText, { color: c.success }]}>{correctCountSoFar} doğru</Text>
             </View>
           )}
+          <TouchableOpacity
+            style={styles.headerMenuBtn}
+            onPress={() => setShowQuestionMenu(true)}
+            hitSlop={12}
+            accessibilityLabel="Menü"
+            accessibilityHint="Paylaş veya bildir">
+            <MaterialIcons name="more-vert" size={24} color={c.text} />
+          </TouchableOpacity>
         </View>
       </View>
       <View style={[styles.progressBarBg, { backgroundColor: c.border }]}>
@@ -400,26 +436,30 @@ export default function QuizScreen() {
           {
             flexGrow: 1,
             justifyContent: 'center',
-            paddingVertical: Spacing.xl,
             paddingBottom: insets.bottom + Spacing.xl,
           },
         ]}
         showsVerticalScrollIndicator={false}>
-        {/* Soru metni ve görsel kartın dışında */}
-        {q.imageCode && getQuestionImageSource(q.imageCode) && (
-          <View style={styles.signImageWrap}>
-            <Image
-              source={getQuestionImageSource(q.imageCode)!}
-              style={styles.signImage}
-              resizeMode="contain"
-            />
-          </View>
-        )}
-        <Text style={[styles.questionText, { color: c.text }]}>{q.text}</Text>
-
-        {/* Sadece şıklar kartın içinde */}
-        <View style={[styles.optionsCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
-          <View style={styles.options}>
+        <View
+          ref={questionCardRef}
+          style={[
+            styles.optionsCard,
+            { backgroundColor: c.card, borderColor: c.border },
+            getCardShadow(c),
+          ]}
+          collapsable={false}>
+          <View style={styles.questionCardInner}>
+            {q.imageCode && getQuestionImageSource(q.imageCode) && (
+              <View style={styles.signImageWrap}>
+                <Image
+                  source={getQuestionImageSource(q.imageCode)!}
+                  style={styles.signImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+            <Text style={[styles.questionText, { color: c.text }]}>{q.text}</Text>
+            <View style={styles.options}>
             {q.options.map((opt, idx) => {
               const isSelected = selectedIndex === idx;
               const isCorrect = idx === q.correctIndex;
@@ -470,6 +510,7 @@ export default function QuizScreen() {
                 </TouchableOpacity>
               );
             })}
+            </View>
           </View>
         </View>
 
@@ -501,35 +542,148 @@ export default function QuizScreen() {
           </View>
         )}
 
-        <View style={styles.navRow}>
-          <TouchableOpacity
-            style={[
-              styles.navBtn,
-              { backgroundColor: canGoBack ? c.card : c.card, borderColor: c.border },
-              !canGoBack && styles.navBtnDisabled,
-            ]}
-            onPress={handlePrev}
-            disabled={!canGoBack}
-            activeOpacity={0.8}>
-            <MaterialIcons name="chevron-left" size={24} color={canGoBack ? c.text : c.textSecondary} />
-            <Text style={[styles.navBtnText, { color: canGoBack ? c.text : c.textSecondary }]}>Geri</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.navBtn,
-              { backgroundColor: canGoNext ? c.primary : c.card, borderColor: canGoNext ? c.primary : c.border },
-              !canGoNext && styles.navBtnDisabled,
-            ]}
-            onPress={handleNext}
-            disabled={!canGoNext}
-            activeOpacity={0.8}>
-            <Text style={[styles.navBtnText, { color: canGoNext ? c.primaryContrast : c.textSecondary }]}>
-              {currentIndex >= total - 1 ? 'Sonuçları Gör' : 'İleri'}
-            </Text>
-            <MaterialIcons name="chevron-right" size={24} color={canGoNext ? c.primaryContrast : c.textSecondary} />
-          </TouchableOpacity>
-        </View>
+        {(!needsExplanation || explanationReady) && (
+          <View style={styles.navRow}>
+            <TouchableOpacity
+              style={[
+                styles.navBtn,
+                { backgroundColor: canGoBack ? c.card : c.card, borderColor: c.border },
+                !canGoBack && styles.navBtnDisabled,
+              ]}
+              onPress={handlePrev}
+              disabled={!canGoBack}
+              activeOpacity={0.8}>
+              <MaterialIcons name="chevron-left" size={24} color={canGoBack ? c.text : c.textSecondary} />
+              <Text style={[styles.navBtnText, { color: canGoBack ? c.text : c.textSecondary }]}>Geri</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.navBtn,
+                { backgroundColor: canGoNext ? c.primary : c.card, borderColor: canGoNext ? c.primary : c.border },
+                !canGoNext && styles.navBtnDisabled,
+              ]}
+              onPress={handleNext}
+              disabled={!canGoNext}
+              activeOpacity={0.8}>
+              <Text style={[styles.navBtnText, { color: canGoNext ? c.primaryContrast : c.textSecondary }]}>
+                {currentIndex >= total - 1 ? 'Sonuçları Gör' : 'İleri'}
+              </Text>
+              <MaterialIcons name="chevron-right" size={24} color={canGoNext ? c.primaryContrast : c.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Soru menüsü: Paylaş, Bildir */}
+      <Modal
+        visible={showQuestionMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQuestionMenu(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowQuestionMenu(false)}>
+          <View style={[styles.questionMenuCard, { backgroundColor: c.card, borderColor: c.border }]}>
+            <TouchableOpacity
+              style={[styles.questionMenuItem, { borderBottomColor: c.border }]}
+              onPress={async () => {
+                setShowQuestionMenu(false);
+                const shareCard = () => {
+                  const node = questionCardRef.current;
+                  if (!node) return;
+                  const fileUri = (uri: string) =>
+                    uri.startsWith('file://') ? uri : 'file://' + uri;
+                  captureRef(node, { format: 'jpg', result: 'tmpfile', quality: 1 })
+                    .then(async (uri) => {
+                      const normalized = fileUri(uri);
+                      const canShare = await Sharing.isAvailableAsync();
+                      if (canShare) {
+                        await Sharing.shareAsync(normalized, { mimeType: 'image/jpeg' });
+                      } else {
+                        await Share.share({ message: q?.text ?? '', url: normalized });
+                      }
+                    })
+                    .catch(() => {
+                      Share.share({ message: q?.text ?? '' });
+                    });
+                };
+                setTimeout(shareCard, 400);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="share" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Paylaş</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.questionMenuItem}
+              onPress={() => {
+                setShowQuestionMenu(false);
+                setShowReportModal(true);
+                setReportReason(null);
+              }}
+              activeOpacity={0.7}>
+              <MaterialIcons name="flag" size={22} color={c.text} />
+              <Text style={[styles.questionMenuItemText, { color: c.text }]}>Bildir</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Bildir: sebep seç + gönder */}
+      <Modal
+        visible={showReportModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowReportModal(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowReportModal(false)}>
+          <Pressable
+            style={[styles.reportModalCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+            onPress={(e) => e.stopPropagation()}>
+            <Text style={[styles.reportModalTitle, { color: c.text }]}>Bildir</Text>
+            <Text style={[styles.reportModalSubtitle, { color: c.textSecondary }]}>
+              Soruyu neden bildirmek istiyorsunuz?
+            </Text>
+            {REPORT_REASONS.map(({ value, label }) => (
+              <TouchableOpacity
+                key={value}
+                style={[styles.reportReasonRow, { borderBottomColor: c.border }]}
+                onPress={() => setReportReason(value)}
+                activeOpacity={0.7}>
+                <Text style={[styles.reportReasonLabel, { color: c.text }]}>{label}</Text>
+                {reportReason === value && (
+                  <MaterialIcons name="check" size={24} color={c.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <View style={styles.reportModalButtons}>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, { borderColor: c.border }]}
+                onPress={() => setShowReportModal(false)}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnText, { color: c.text }]}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reportModalBtn, styles.reportModalBtnPrimary, { backgroundColor: c.primary }]}
+                onPress={() => {
+                  if (!reportReason || !q) return;
+                  submitQuestionReport({
+                    questionId: q.id,
+                    reason: reportReason,
+                    questionText: q.text,
+                    categoryId: q.categoryId,
+                  }).then(() => {
+                    setShowReportModal(false);
+                    setReportReason(null);
+                    Alert.alert('Teşekkürler', 'Bildiriminiz alındı.');
+                  }).catch(() => {
+                    Alert.alert('Hata', 'Bildirim gönderilemedi. Tekrar deneyin.');
+                  });
+                }}
+                disabled={!reportReason}
+                activeOpacity={0.8}>
+                <Text style={[styles.reportModalBtnTextPrimary, { color: c.primaryContrast }]}>Bildir</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal
         visible={showExitModal}
@@ -653,7 +807,15 @@ const styles = StyleSheet.create({
   },
   wrongBtnText: { fontSize: 16, fontWeight: '600', flex: 1, marginLeft: Spacing.sm },
   scroll: { flex: 1 },
-  scrollContent: { padding: Spacing.md, paddingBottom: Spacing.xl },
+  scrollContent: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.xl },
+  questionCardInner: { padding: Spacing.md },
+  headerMenuBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.sm,
+  },
   signImageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
   signImage: { width: 120, height: 120 },
   questionText: {
@@ -663,7 +825,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   optionsCard: {
-    padding: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     marginBottom: Spacing.md,
@@ -731,6 +892,60 @@ const styles = StyleSheet.create({
   },
   navBtnDisabled: { opacity: 0.6 },
   navBtnText: { fontSize: 16, fontWeight: '600' },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  questionMenuCard: {
+    minWidth: 200,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  questionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
+  },
+  questionMenuItemText: { fontSize: 16, fontWeight: '500' },
+  reportModalCard: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+  },
+  reportModalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
+  reportModalSubtitle: { fontSize: 14, marginBottom: Spacing.md },
+  reportReasonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  reportReasonLabel: { fontSize: 15, fontWeight: '500' },
+  reportModalButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+    justifyContent: 'flex-end',
+  },
+  reportModalBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  reportModalBtnPrimary: {},
+  reportModalBtnText: { fontSize: 15, fontWeight: '600' },
+  reportModalBtnTextPrimary: { fontSize: 15, fontWeight: '600' },
   exitModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',

@@ -66,7 +66,7 @@ export default function ProfilGuncellemeScreen() {
               autoCapitalize="words"
             />
             {error ? <Text style={[styles.error, { color: c.error }]}>{error}</Text> : null}
-            <Pressable style={[styles.button, { backgroundColor: c.primary }]} onPress={handleSave} activeOpacity={0.8}>
+            <Pressable style={[styles.button, { backgroundColor: c.primary }]} onPress={handleSave}>
               <Text style={[styles.buttonText, { color: c.primaryContrast }]}>Kaydet</Text>
             </Pressable>
           </View>

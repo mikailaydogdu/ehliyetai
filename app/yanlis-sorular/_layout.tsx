@@ -5,6 +5,7 @@ export default function YanlisSorularLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="[category]" options={{ title: 'Yanlış Sorular' }} />
+      <Stack.Screen name="notlar/[category]" options={{ title: 'İlgili Notlar' }} />
     </Stack>
   );
 }

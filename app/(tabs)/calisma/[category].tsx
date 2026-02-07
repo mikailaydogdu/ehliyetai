@@ -261,17 +261,17 @@ export default function CalismaCategoryScreen() {
 
         {/* Yanlış cevapta açıklama */}
         {hasAnswered && !isCorrect && (
-          <View style={[styles.explanationCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <View style={[styles.explanationCard, { backgroundColor: c.card, borderColor: c.border }]}>
             <Text style={[styles.explanationTitle, { color: c.text }]}>Açıklama</Text>
             {loadingExplanation && (
               <View style={styles.explanationLoading}>
                 <ActivityIndicator size="small" color={c.primary} />
-                <Text style={[styles.explanationLoadingText, { color: c.textMuted }]}>EhliyetAI düşünüyor…</Text>
+                <Text style={[styles.explanationLoadingText, { color: c.textSecondary }]}>EhliyetAI düşünüyor…</Text>
               </View>
             )}
             {explanationError && !loadingExplanation && (
               <View style={styles.explanationError}>
-                <Text style={[styles.explanationErrorText, { color: c.textMuted }]}>Açıklama yüklenemedi.</Text>
+                <Text style={[styles.explanationErrorText, { color: c.textSecondary }]}>Açıklama yüklenemedi.</Text>
                 <TouchableOpacity style={[styles.retryBtn, { borderColor: c.primary }]} onPress={retryExplanation} activeOpacity={0.8}>
                   <Text style={[styles.retryBtnText, { color: c.primary }]}>Tekrar dene</Text>
                 </TouchableOpacity>

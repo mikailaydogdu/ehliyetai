@@ -2,10 +2,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BorderRadius, Colors, getCardShadow, Spacing } from '@/constants/theme';
+import { showRewardedAd } from '@/lib/ads';
 import { useContent } from '@/context/ContentContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getCompletedFullExams } from '@/lib/localStorage';
@@ -32,6 +33,7 @@ export default function SinavScreen() {
   const [activeTab, setActiveTab] = useState<TabId>('konu');
   const [completedFullExams, setCompletedFullExams] = useState<number[]>([]);
   const [examPopupExamNum, setExamPopupExamNum] = useState<number | null>(null);
+  const [adLoading, setAdLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -164,14 +166,14 @@ export default function SinavScreen() {
         visible={examPopupExamNum !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setExamPopupExamNum(null)}>
+        onRequestClose={() => { setExamPopupExamNum(null); setAdLoading(false); }}>
         <Pressable
           style={styles.modalOverlay}
-          onPress={() => setExamPopupExamNum(null)}>
+          onPress={() => { setExamPopupExamNum(null); setAdLoading(false); }}>
           <Pressable style={[styles.modalCard, { backgroundColor: c.card, borderColor: c.border }]} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: c.text }]}>Sınava devam etmek için</Text>
-              <TouchableOpacity onPress={() => setExamPopupExamNum(null)} hitSlop={12} style={styles.modalClose}>
+              <TouchableOpacity onPress={() => { setExamPopupExamNum(null); setAdLoading(false); }} hitSlop={12} style={styles.modalClose}>
                 <MaterialIcons name="close" size={24} color={c.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -182,17 +184,37 @@ export default function SinavScreen() {
               style={[styles.modalBtn, styles.modalBtnPrimary, { backgroundColor: c.primary }]}
               onPress={() => {
                 const num = examPopupExamNum;
-                setExamPopupExamNum(null);
-                if (num) router.push({ pathname: '/sinav-baslangic', params: { fullExam: String(num) } } as never);
+                setAdLoading(true);
+                showRewardedAd({
+                  onRewarded: () => {
+                    setExamPopupExamNum(null);
+                    if (num) router.push({ pathname: '/sinav-baslangic', params: { fullExam: String(num) } } as never);
+                  },
+                  onDone: (result) => {
+                    setAdLoading(false);
+                    if (result === 'error') setExamPopupExamNum(null);
+                  },
+                });
               }}
+              disabled={adLoading}
               activeOpacity={0.8}>
-              <MaterialIcons name="play-circle-outline" size={22} color={c.primaryContrast} />
-              <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam izle</Text>
+              {adLoading ? (
+                <>
+                  <ActivityIndicator size="small" color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam yükleniyor</Text>
+                </>
+              ) : (
+                <>
+                  <MaterialIcons name="play-circle-outline" size={22} color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam izle</Text>
+                </>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.modalBtn, styles.modalBtnOutline, { borderColor: c.border }]}
               onPress={() => {
                 setExamPopupExamNum(null);
+                setAdLoading(false);
                 router.push('/pro-uyelik' as never);
               }}
               activeOpacity={0.8}>
@@ -201,7 +223,7 @@ export default function SinavScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalCancelWrap}
-              onPress={() => setExamPopupExamNum(null)}
+              onPress={() => { setExamPopupExamNum(null); setAdLoading(false); }}
               activeOpacity={0.7}>
               <Text style={[styles.modalCancel, { color: c.textSecondary }]}>İptal</Text>
             </TouchableOpacity>

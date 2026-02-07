@@ -39,6 +39,12 @@ const base = {
   plugins: [
     'expo-router',
     [
+      'react-native-google-mobile-ads',
+      {
+        androidAppId: 'ca-app-pub-9486767362549469~4328217960',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         image: './assets/images/ehliyetai.png',
