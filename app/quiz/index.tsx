@@ -106,6 +106,7 @@ export default function QuizScreen() {
   const [finalWrongAnswers, setFinalWrongAnswers] = useState<WrongAnswer[]>([]);
   /** Sonuç ekranında tüm soruları doğru/yanlış göstermek için */
   const [finalQuestions, setFinalQuestions] = useState<Question[]>([]);
+  const [visibleResultQuestions, setVisibleResultQuestions] = useState(10);
   const [finalAnswersByIndex, setFinalAnswersByIndex] = useState<Record<number, number>>({});
   const initialSeconds = (daily === '1' ? 10 : category ? 10 : EXAM_DURATION_MINUTES) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
@@ -349,11 +350,33 @@ export default function QuizScreen() {
             </Text>
           </View>
 
-          {/* Tüm sorular: doğru/yanlış, doğru şık işaretli */}
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
+            onPress={() => router.replace('/(tabs)/sinav' as never)}
+            activeOpacity={0.8}>
+            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Bitir</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.outlineBtn, { borderColor: c.border }]}
+            onPress={() => {
+              setQuizKey((k) => k + 1);
+              setCurrentIndex(0);
+              setAnswersByIndex({});
+              setFinalWrongAnswers([]);
+              setFinalQuestions([]);
+              setFinalAnswersByIndex({});
+              setVisibleResultQuestions(10);
+              setFinished(false);
+            }}
+            activeOpacity={0.8}>
+            <Text style={[styles.outlineBtnText, { color: c.text }]}>Tekrar</Text>
+          </TouchableOpacity>
+
+          {/* Tüm sorular: doğru/yanlış, doğru şık işaretli — önce 10, "Daha fazla" ile 10'ar */}
           {finalQuestions.length > 0 && (
             <View style={styles.resultQuestionsWrap}>
               <Text style={[styles.resultSectionTitle, { color: c.text }]}>Tüm sorular</Text>
-              {finalQuestions.map((question, i) => {
+              {finalQuestions.slice(0, visibleResultQuestions).map((question, i) => {
                 const sel = finalAnswersByIndex[i] ?? undefined;
                 const isCorrect = sel !== undefined && sel === question.correctIndex;
                 return (
@@ -365,7 +388,7 @@ export default function QuizScreen() {
                       <View
                         style={[
                           styles.resultQuestionBadge,
-                          { backgroundColor: isCorrect ? c.success + '20', borderColor: isCorrect ? c.success : c.error },
+                          { backgroundColor: isCorrect ? (c.success + '20') : (c.error + '20'), borderColor: isCorrect ? c.success : c.error },
                         ]}>
                         <MaterialIcons
                           name={isCorrect ? 'check-circle' : 'cancel'}
@@ -427,29 +450,17 @@ export default function QuizScreen() {
                   </View>
                 );
               })}
+              {finalQuestions.length > visibleResultQuestions && (
+                <TouchableOpacity
+                  style={[styles.resultLoadMoreBtn, { borderColor: c.border }]}
+                  onPress={() => setVisibleResultQuestions((n) => n + 10)}
+                  activeOpacity={0.7}>
+                  <Text style={[styles.resultLoadMoreText, { color: c.primary }]}>Daha fazla</Text>
+                  <MaterialIcons name="expand-more" size={24} color={c.primary} />
+                </TouchableOpacity>
+              )}
             </View>
           )}
-
-          <TouchableOpacity
-            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
-            onPress={() => router.replace('/(tabs)/sinav' as never)}
-            activeOpacity={0.8}>
-            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Bitir</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.outlineBtn, { borderColor: c.border }]}
-            onPress={() => {
-              setQuizKey((k) => k + 1);
-              setCurrentIndex(0);
-              setAnswersByIndex({});
-              setFinalWrongAnswers([]);
-              setFinalQuestions([]);
-              setFinalAnswersByIndex({});
-              setFinished(false);
-            }}
-            activeOpacity={0.8}>
-            <Text style={[styles.outlineBtnText, { color: c.text }]}>Tekrar</Text>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
@@ -866,6 +877,18 @@ const styles = StyleSheet.create({
   resultSub: { fontSize: 15, textAlign: 'center' },
   resultQuestionsWrap: { width: '100%', marginTop: Spacing.lg, marginBottom: Spacing.md },
   resultSectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md, paddingHorizontal: Spacing.sm },
+  resultLoadMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+  },
+  resultLoadMoreText: { fontSize: 16, fontWeight: '600' },
   resultQuestionCard: {
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
@@ -937,8 +960,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: Spacing.sm,
   },
-  signImageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
-  signImage: { width: 120, height: 120 },
+  signImageWrap: { width: '100%', alignItems: 'center', marginBottom: Spacing.sm },
+  signImage: { width: '100%', height: 220, borderRadius: BorderRadius.sm },
   questionText: {
     fontSize: 16,
     fontWeight: '600',

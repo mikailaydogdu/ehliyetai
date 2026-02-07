@@ -64,6 +64,7 @@ export default function CalismaCategoryScreen() {
   const [showQuestionMenu, setShowQuestionMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState<ReportReason | null>(null);
+  const [visibleResultQuestions, setVisibleResultQuestions] = useState(10);
   const questionCardRef = useRef<View>(null);
 
   /** Seçilen kategorilerden 15 karışık soru */
@@ -89,6 +90,7 @@ export default function CalismaCategoryScreen() {
     setExplanation(null);
     setLoadingExplanation(false);
     setExplanationError(false);
+    setVisibleResultQuestions(10);
   }, [sessionKey]);
 
   const handleSelectOption = (optionIndex: number) => {
@@ -162,11 +164,24 @@ export default function CalismaCategoryScreen() {
             <Text style={[styles.resultPuan, { color: c.primary }]}>{puan} puan</Text>
           </View>
 
-          {/* Tüm sorular: doğru/yanlış, doğru şık işaretli */}
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
+            onPress={() => router.back()}
+            activeOpacity={0.8}>
+            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Bitir</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.outlineBtn, { borderColor: c.border }]}
+            onPress={restart}
+            activeOpacity={0.8}>
+            <Text style={[styles.outlineBtnText, { color: c.text }]}>Tekrar</Text>
+          </TouchableOpacity>
+
+          {/* Tüm sorular: önce 10, "Daha fazla" ile 10'ar */}
           {questions.length > 0 && (
             <View style={styles.resultQuestionsWrap}>
               <Text style={[styles.resultSectionTitle, { color: c.text }]}>Tüm sorular</Text>
-              {questions.map((question, i) => {
+              {questions.slice(0, visibleResultQuestions).map((question, i) => {
                 const sel = answersByIndex[i] ?? undefined;
                 const isCorrect = sel !== undefined && sel === question.correctIndex;
                 return (
@@ -178,7 +193,7 @@ export default function CalismaCategoryScreen() {
                       <View
                         style={[
                           styles.resultQuestionBadge,
-                          { backgroundColor: isCorrect ? c.success + '20', borderColor: isCorrect ? c.success : c.error },
+                          { backgroundColor: isCorrect ? (c.success + '20') : (c.error + '20'), borderColor: isCorrect ? c.success : c.error },
                         ]}>
                         <MaterialIcons
                           name={isCorrect ? 'check-circle' : 'cancel'}
@@ -240,21 +255,17 @@ export default function CalismaCategoryScreen() {
                   </View>
                 );
               })}
+              {questions.length > visibleResultQuestions && (
+                <TouchableOpacity
+                  style={[styles.resultLoadMoreBtn, { borderColor: c.border }]}
+                  onPress={() => setVisibleResultQuestions((n) => n + 10)}
+                  activeOpacity={0.7}>
+                  <Text style={[styles.resultLoadMoreText, { color: c.primary }]}>Daha fazla</Text>
+                  <MaterialIcons name="expand-more" size={24} color={c.primary} />
+                </TouchableOpacity>
+              )}
             </View>
           )}
-
-          <TouchableOpacity
-            style={[styles.primaryBtn, { backgroundColor: c.primary }]}
-            onPress={() => router.back()}
-            activeOpacity={0.8}>
-            <Text style={[styles.primaryBtnText, { color: c.primaryContrast }]}>Bitir</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.outlineBtn, { borderColor: c.border }]}
-            onPress={restart}
-            activeOpacity={0.8}>
-            <Text style={[styles.outlineBtnText, { color: c.text }]}>Tekrar</Text>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
@@ -622,8 +633,8 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.md },
 
-  imageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
-  questionImage: { width: 200, height: 160, borderRadius: 8 },
+  imageWrap: { width: '100%', alignItems: 'center', marginBottom: Spacing.sm },
+  questionImage: { width: '100%', height: 220, borderRadius: BorderRadius.sm },
   questionText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.lg },
 
   optionsCard: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, marginBottom: Spacing.md },
@@ -669,6 +680,18 @@ const styles = StyleSheet.create({
   resultPuan: { fontSize: 20, fontWeight: '700' },
   resultQuestionsWrap: { width: '100%', marginTop: Spacing.lg, marginBottom: Spacing.md },
   resultSectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md, paddingHorizontal: Spacing.sm },
+  resultLoadMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+  },
+  resultLoadMoreText: { fontSize: 16, fontWeight: '600' },
   resultQuestionCard: {
     padding: Spacing.md,
     borderRadius: BorderRadius.md,

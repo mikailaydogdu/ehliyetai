@@ -438,8 +438,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.md,
   },
-  signImageWrap: { alignItems: 'center', marginBottom: Spacing.sm },
-  signImage: { width: 120, height: 120 },
+  signImageWrap: { width: '100%', alignItems: 'center', marginBottom: Spacing.sm },
+  signImage: { width: '100%', height: 220, borderRadius: BorderRadius.sm },
   questionText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: Spacing.md },
   options: { gap: 8 },
   option: {

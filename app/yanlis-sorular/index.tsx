@@ -133,7 +133,10 @@ export default function YanlisSorularIndexScreen() {
         {activeTab === 'sorular' && (
           <>
             <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>
-              Yanlış yaptığın sorular kategoriler halinde tekrar çöz. Önce İlgili notlar sekmesinden notları kontrol et.
+              Yanlış yaptığın sorular kategoriler halinde tekrar çöz.{' '}
+              <Text style={[styles.sectionTitle, { color: '#CA8A04' }]}>
+                Önce İlgili notlar sekmesinden notları kontrol et.
+              </Text>
             </Text>
             {categories.slice(0, visibleCategories).map(({ categoryId, categoryName, count }) => (
               <TouchableOpacity
@@ -164,6 +167,9 @@ export default function YanlisSorularIndexScreen() {
 
         {activeTab === 'notlar' && (
           <>
+            <Text style={[styles.sectionTitle, styles.notesSectionTitle, { color: c.text }]}>
+              Yanlış yaptığın soruların notları
+            </Text>
             <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>
               Yapay zeka notlarını incele. Sonra soruları kategorilerden tekrar çöz.
             </Text>
@@ -246,6 +252,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.md },
   sectionTitle: { fontSize: 14, marginBottom: Spacing.md },
+  notesSectionTitle: { fontSize: 15, fontWeight: '600' },
   categoryCard: {
     flexDirection: 'row',
     alignItems: 'center',
