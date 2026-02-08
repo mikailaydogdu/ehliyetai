@@ -10,12 +10,14 @@ import { useContent } from '@/context/ContentContext';
 export default function IndexScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
-  const { hasCompletedOnboarding, isLoading } = useAuth();
+  const { hasCompletedOnboarding, hasAcceptedAdsOnboarding, isLoading } = useAuth();
   const { isContentLoading } = useContent();
+
+  const canEnterApp = hasCompletedOnboarding === true && hasAcceptedAdsOnboarding === true;
 
   useEffect(() => {
     if (isLoading) return;
-    if (hasCompletedOnboarding === false) {
+    if (hasCompletedOnboarding === false || hasAcceptedAdsOnboarding === false) {
       router.replace('/onboarding');
       requestAnimationFrame(() => {
         requestAnimationFrame(() => SplashScreen.hideAsync());
@@ -27,9 +29,9 @@ export default function IndexScreen() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => SplashScreen.hideAsync());
     });
-  }, [isLoading, hasCompletedOnboarding, isContentLoading]);
+  }, [isLoading, hasCompletedOnboarding, hasAcceptedAdsOnboarding, isContentLoading]);
 
-  if (!isLoading && hasCompletedOnboarding === true && isContentLoading) {
+  if (!isLoading && canEnterApp && isContentLoading) {
     return (
       <View style={[styles.container, { backgroundColor: c.background }]}>
         <ActivityIndicator size="large" color={c.primary} />

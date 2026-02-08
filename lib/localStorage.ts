@@ -1,11 +1,12 @@
 /**
- * Profil ve sınav verileri yerelde AsyncStorage ile saklanır.
+ * Profile and quiz data stored locally with AsyncStorage.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { QuizResult, SavedWrongQuestion } from '@/types';
 
 const KEY_ONBOARDING = '@fersa_onboarding_done';
+const KEY_ADS_ONBOARDING_ACCEPTED = '@fersa_ads_onboarding_accepted';
 const KEY_PROFILE_NAME = '@fersa_profile_name';
 const KEY_EXAM_DATE = '@fersa_exam_date';
 const KEY_WRONG_QUESTIONS = '@fersa_wrong_questions';
@@ -21,6 +22,15 @@ export async function getOnboardingDone(): Promise<boolean> {
 
 export async function setOnboardingDone(value: boolean): Promise<void> {
   await AsyncStorage.setItem(KEY_ONBOARDING, value ? 'true' : 'false');
+}
+
+export async function getAdsOnboardingAccepted(): Promise<boolean> {
+  const v = await AsyncStorage.getItem(KEY_ADS_ONBOARDING_ACCEPTED);
+  return v === 'true';
+}
+
+export async function setAdsOnboardingAccepted(value: boolean): Promise<void> {
+  await AsyncStorage.setItem(KEY_ADS_ONBOARDING_ACCEPTED, value ? 'true' : 'false');
 }
 
 export async function getProfileName(): Promise<string | null> {
@@ -95,7 +105,7 @@ export async function addQuizResultLocal(
   await AsyncStorage.setItem(KEY_TOTAL_QUESTIONS_COMPLETED, String(totalSoFar + result.totalQuestions));
 }
 
-/** Tüm zamanlar toplam çözülen soru sayısı (son 10 sınavla sınırlı değil). */
+/** Total questions completed (all time, not limited to last 10 quizzes). */
 export async function getTotalQuestionsCompleted(): Promise<number> {
   const v = await AsyncStorage.getItem(KEY_TOTAL_QUESTIONS_COMPLETED);
   if (v != null) {
@@ -128,7 +138,7 @@ export async function markFullExamCompleted(examIndex: number): Promise<void> {
   await AsyncStorage.setItem(KEY_COMPLETED_FULL_EXAMS, JSON.stringify(updated));
 }
 
-/** Tüm profil verilerini siler (ad, sınav tarihi, yanlış sorular, sınav sonuçları, tamamlanan tam sınav listesi). Onboarding silinmez. */
+/** Clears all profile data (name, exam date, wrong questions, quiz results, completed full exams). Onboarding is not cleared. */
 export async function clearAllProfileData(): Promise<void> {
   await AsyncStorage.multiRemove([
     KEY_PROFILE_NAME,

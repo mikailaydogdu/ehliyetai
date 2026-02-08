@@ -14,7 +14,7 @@ import { useStats } from '@/context/StatsContext';
 import { clearAllProfileData } from '@/lib/localStorage';
 
 const APP_LOGO = require('@/assets/images/ehliyetai.png');
-const APP_NAME = 'EhliyetAI';
+const APP_NAME = 'EhliyetAi';
 
 type GridItem = {
   id: string;
@@ -25,8 +25,8 @@ type GridItem = {
 
 const GRID_ITEMS: GridItem[] = [
   { id: 'istatistikler', label: 'İstatistikler', icon: 'bar-chart', path: '/istatistikler' },
+  { id: 'sinavStratejisi', label: 'Sınav Stratejisi', icon: 'psychology', path: '/sinav-stratejisi' },
   { id: 'yardim', label: 'Yardım', icon: 'help-outline', path: '/yardim' },
-  { id: 'yanlis', label: 'Yanlışlar', icon: 'assignment', path: '/yanlis-sorular' },
   { id: 'hakkinda', label: 'Uygulama Hakkında', icon: 'info', path: '/uygulama-hakkinda' },
 ];
 

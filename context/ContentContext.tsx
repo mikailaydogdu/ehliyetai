@@ -3,6 +3,7 @@ import { getIsaretQuestions } from '@/data/isaretSorulari';
 import {
   mockCategories as localCategoriesTemplate,
   shuffleArray,
+  CALISMA_QUESTION_COUNT,
   EXAM_ILK_YARDIM,
   EXAM_TRAFIK_ADABI,
   EXAM_TRAFIK_TEXT,
@@ -25,6 +26,7 @@ interface ContentContextType {
   isContentLoading: boolean;
   contentError: string | null;
   getQuestionsByCategory: (categoryId: string) => Question[];
+  getQuestionsForCalisma: (categoryIds: string[]) => Question[];
   getMixedQuestionsForQuiz: () => Question[];
   getDailyQuizQuestions: () => Question[];
 }
@@ -81,6 +83,19 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     [questions]
   );
 
+  const getQuestionsForCalisma = useCallback(
+    (categoryIds: string[]): Question[] => {
+      if (categoryIds.length === 0) return [];
+      const sourceIds = new Set(categoryIds.map((id) => CATEGORY_TO_SOURCE[id] ?? id));
+      let pool = questions.filter((q) => sourceIds.has(q.categoryId));
+      if (sourceIds.has('isaretler')) {
+        pool = [...pool, ...getIsaretQuestions(CALISMA_QUESTION_COUNT)];
+      }
+      return shuffleArray(pool).slice(0, CALISMA_QUESTION_COUNT);
+    },
+    [questions]
+  );
+
   const getMixedQuestionsForQuiz = useCallback((): Question[] => {
     const byCategory: Record<string, Question[]> = {};
     questions.forEach((q) => {
@@ -129,6 +144,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       isContentLoading,
       contentError,
       getQuestionsByCategory,
+      getQuestionsForCalisma,
       getMixedQuestionsForQuiz,
       getDailyQuizQuestions,
     }),
@@ -138,6 +154,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       isContentLoading,
       contentError,
       getQuestionsByCategory,
+      getQuestionsForCalisma,
       getMixedQuestionsForQuiz,
       getDailyQuizQuestions,
     ]

@@ -10,12 +10,12 @@ const SECTIONS = [
   {
     title: 'Kabul',
     content:
-      'EhliyetAI mobil uygulamasını ve ilgili hizmetleri ("Hizmet") kullanarak bu Kullanım Koşullarını kabul etmiş sayılırsınız. Koşulları kabul etmiyorsanız uygulamayı kullanmayınız.',
+      'EhliyetAi mobil uygulamasını ve ilgili hizmetleri ("Hizmet") kullanarak bu Kullanım Koşullarını kabul etmiş sayılırsınız. Koşulları kabul etmiyorsanız uygulamayı kullanmayınız.',
   },
   {
     title: 'Hizmetin tanımı',
     content:
-      'EhliyetAI, B sınıfı sürücü belgesi sınavına hazırlık amacıyla sunulan bir eğitim uygulamasıdır. Uygulama; konu testleri, tam sınav simülasyonu, günlük sorular, yapay zeka destekli açıklamalar ve istatistikler gibi özellikler sunar. Hizmet "olduğu gibi" sunulmaktadır.',
+      'EhliyetAi, B sınıfı sürücü belgesi sınavına hazırlık amacıyla sunulan bir eğitim uygulamasıdır. Uygulama; konu testleri, tam sınav simülasyonu, günlük sorular, yapay zeka destekli açıklamalar ve istatistikler gibi özellikler sunar. Hizmet "olduğu gibi" sunulmaktadır. Uygulama ücretsizdir; bazı özelliklerde (günün sınavı, belirli konu testleri, tam sınav vb.) devam edebilmek için kısa reklam izlemeniz istenebilir. Reklamsız kullanım için Pro üyelik seçeneği sunulabilir.',
   },
   {
     title: 'Kullanım kuralları',
@@ -30,12 +30,12 @@ const SECTIONS = [
   {
     title: 'Fikri mülkiyet',
     content:
-      'Uygulama, arayüz, logo, metin ve içerikler dahil tüm unsurların fikri mülkiyet hakları EhliyetAI’ye aittir. İzinsiz kopyalama, dağıtma veya türev çalışma oluşturma yasaktır.',
+      'Uygulama, arayüz, logo, metin ve içerikler dahil tüm unsurların fikri mülkiyet hakları EhliyetAi’ye aittir. İzinsiz kopyalama, dağıtma veya türev çalışma oluşturma yasaktır.',
   },
   {
     title: 'Sorumluluk reddi',
     content:
-      'Uygulama bilgilendirme ve pratik amaçlıdır. Resmi sınav kuralları, soruları ve geçme koşulları ilgili resmi kurumlarca belirlenir. Sınav başarınız yalnızca sizin çalışmanıza bağlıdır. EhliyetAI, sınav sonucu veya yanlış bilgi nedeniyle oluşan zararlardan sorumlu tutulamaz.',
+      'Uygulama bilgilendirme ve pratik amaçlıdır. Resmi sınav kuralları, soruları ve geçme koşulları ilgili resmi kurumlarca belirlenir. Sınav başarınız yalnızca sizin çalışmanıza bağlıdır. EhliyetAi, sınav sonucu veya yanlış bilgi nedeniyle oluşan zararlardan sorumlu tutulamaz.',
   },
   {
     title: 'Hizmetin değiştirilmesi ve sona ermesi',

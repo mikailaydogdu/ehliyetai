@@ -57,12 +57,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="calisma"
+        name="sinav"
         options={{
-          title: 'EhliyetAI',
+          title: 'Sınav',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? 'pencil-box' : 'pencil-box-outline'}
+              name={focused ? 'clipboard-text' : 'clipboard-text-outline'}
               size={size ?? 24}
               color={color}
             />
@@ -70,12 +70,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="sinav"
+        name="hero"
         options={{
-          title: 'Sınav',
+          title: 'Yanlişlarim',
+          tabBarLabel: 'Yanlişlar',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? 'clipboard-text' : 'clipboard-text-outline'}
+              name={focused ? 'alert-circle' : 'alert-circle-outline'}
               size={size ?? 24}
               color={color}
             />

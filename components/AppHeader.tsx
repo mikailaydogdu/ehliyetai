@@ -1,26 +1,26 @@
-import { usePathname, router } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const TITLE_MAP: Record<string, string> = {
   index: 'Anasayfa',
   egitim: 'Notlar',
-  calisma: 'EhliyetAI',
   sinav: 'Sınav',
+  hero: 'Yanlislarim',
   profil: 'Profil',
 };
 
-/** Eğitim stack iç ekranları */
+/** Nested screens in Education stack */
 const NESTED_TITLE_MAP: Record<string, string> = {
   isaretler: 'Trafik İşaretleri',
   bos: 'Notlar',
 };
 
-/** EhliyetAI kategori ekranları */
+/** Topic quiz / category screen titles */
 const CALISMA_TITLE_MAP: Record<string, string> = {
   karisik: 'Karışık',
   motor: 'Motor',
@@ -32,7 +32,7 @@ const CALISMA_TITLE_MAP: Record<string, string> = {
   bakim: 'Araç Tekniği',
 };
 
-/** Virgülle ayrılmış kategori ID'lerini başlığa çevir */
+/** Convert comma-separated category IDs to display title */
 function getCalismaTitle(nested: string): string {
   const ids = nested.split(',').filter(Boolean);
   if (ids.length === 1) return CALISMA_TITLE_MAP[ids[0]] ?? ids[0];
@@ -49,9 +49,9 @@ function getTitle(pathname: string): string {
     if (base === 'calisma') {
       return getCalismaTitle(nested);
     }
-    return NESTED_TITLE_MAP[nested] ?? TITLE_MAP[base] ?? 'B Ehliyet';
+    return NESTED_TITLE_MAP[nested] ?? TITLE_MAP[base] ?? 'EhliyetAi';
   }
-  return TITLE_MAP[base] ?? 'B Ehliyet';
+  return TITLE_MAP[base] ?? 'EhliyetAi';
 }
 
 function isNestedScreen(pathname: string): boolean {

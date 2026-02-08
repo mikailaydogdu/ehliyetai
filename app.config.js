@@ -5,7 +5,7 @@ try {
 } catch (_) {}
 
 const base = {
-  name: 'EhliyetAI',
+  name: 'EhliyetAi',
   slug: 'ehliyetai',
   version: '1.0.0',
   orientation: 'portrait',
@@ -42,6 +42,7 @@ const base = {
       'react-native-google-mobile-ads',
       {
         androidAppId: 'ca-app-pub-9486767362549469~4328217960',
+        iosAppId: 'ca-app-pub-9486767362549469~9098664074',
       },
     ],
     [

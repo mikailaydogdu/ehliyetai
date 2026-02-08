@@ -34,24 +34,16 @@ import { useWrongQuestions } from '@/context/WrongQuestionsContext';
 import { useLastQuizWrong } from '@/context/LastQuizWrongContext';
 import { markFullExamCompleted } from '@/lib/localStorage';
 import { generateWrongExplanation } from '@/lib/groq';
-import { submitQuestionReport, type ReportReason } from '@/lib/firebase';
+import { REPORT_REASONS, submitQuestionReport, type ReportReason } from '@/lib/firebase';
 import type { WrongAnswer, Question } from '@/types';
 import { captureRef } from 'react-native-view-shot';
-
-const REPORT_REASONS: { value: ReportReason; label: string }[] = [
-  { value: 'soru_yanlis', label: 'Soru yanlış' },
-  { value: 'soru_hatali', label: 'Soru hatalı' },
-  { value: 'cevap_yanlis', label: 'Cevap yanlış' },
-  { value: 'cevap_yanlis_isaretlenmis', label: 'Cevap yanlış işaretlenmiş' },
-  { value: 'diger', label: 'Diğer' },
-];
 
 export default function QuizScreen() {
   const { category, daily, fullExam } = useLocalSearchParams<{ category?: string; daily?: string; fullExam?: string }>();
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
-  const { categories, getQuestionsByCategory, getMixedQuestionsForQuiz, getDailyQuizQuestions, isContentLoading } = useContent();
+  const { categories, getQuestionsByCategory, getQuestionsForCalisma, getMixedQuestionsForQuiz, getDailyQuizQuestions, isContentLoading } = useContent();
   const { addResult } = useStats();
   const { addWrongQuestions, updateWrongQuestionNote } = useWrongQuestions();
   const { setWrongAnswers: setLastQuizWrong } = useLastQuizWrong();
@@ -59,14 +51,21 @@ export default function QuizScreen() {
   const getCategoryName = (categoryId: string) =>
     categories.find((c) => c.id === categoryId)?.name ?? categoryId;
 
+  const isCalismaMode = (category?.includes(',') ?? false) as boolean;
+  const calismaCategoryIds = category?.split(',').filter(Boolean) ?? [];
+
   const examLabel =
     daily === '1'
       ? 'Günün Sınavı'
       : fullExam
-        ? `Tam Sınav ${fullExam}`
-        : category
-          ? `Kategori: ${getCategoryName(category)}`
-          : 'Karışık sınav';
+        ? `E-Sınav ${fullExam}`
+        : isCalismaMode
+          ? calismaCategoryIds.length > 2
+            ? `${calismaCategoryIds.length} kategori`
+            : calismaCategoryIds.map((id) => getCategoryName(id)).join(', ')
+          : category
+            ? `Kategori: ${getCategoryName(category)}`
+            : 'Karışık sınav';
 
   const [quizKey, setQuizKey] = useState(0);
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
@@ -90,6 +89,7 @@ export default function QuizScreen() {
     loadedForKeyRef.current = key;
     let list: Question[] = [];
     if (daily === '1') list = getDailyQuizQuestions();
+    else if (isCalismaMode) list = getQuestionsForCalisma(calismaCategoryIds);
     else if (category) list = shuffleArray([...getQuestionsByCategory(category)]);
     else list = getMixedQuestionsForQuiz();
     setSessionQuestions(list);
@@ -97,7 +97,7 @@ export default function QuizScreen() {
     setAnswersByIndex({});
     setExplanationsByIndex({});
     setLoadingExplanationIndex(null);
-  }, [category, daily, fullExam, quizKey, isContentLoading]);
+  }, [category, daily, fullExam, quizKey, isContentLoading, getQuestionsForCalisma, getQuestionsByCategory]);
 
   const questions = sessionQuestions;
   currentIndexRef.current = currentIndex;
@@ -108,7 +108,7 @@ export default function QuizScreen() {
   const [finalQuestions, setFinalQuestions] = useState<Question[]>([]);
   const [visibleResultQuestions, setVisibleResultQuestions] = useState(10);
   const [finalAnswersByIndex, setFinalAnswersByIndex] = useState<Record<number, number>>({});
-  const initialSeconds = (daily === '1' ? 10 : category ? 10 : EXAM_DURATION_MINUTES) * 60;
+  const initialSeconds = (daily === '1' ? 10 : isCalismaMode ? 0 : category ? 10 : EXAM_DURATION_MINUTES) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const answersByIndexRef = useRef<Record<number, number>>({});
@@ -212,7 +212,7 @@ export default function QuizScreen() {
   }, [quizKey, initialSeconds]);
 
   useEffect(() => {
-    if (finished || total === 0) return;
+    if (finished || total === 0 || initialSeconds <= 0) return;
     timerRef.current = setInterval(() => {
       setRemainingSeconds((s) => {
         if (s <= 60 && !lastMinuteWarnedRef.current) {
@@ -480,12 +480,14 @@ export default function QuizScreen() {
           {currentIndex + 1} / {total}
         </Text>
         <View style={styles.headerRight}>
-          <View style={styles.headerTimerWrap}>
-            <MaterialIcons name="access-time" size={18} color={remainingSeconds <= 60 ? c.error : c.textSecondary} />
-            <Text style={[styles.headerTimerText, { color: remainingSeconds <= 60 ? c.error : c.textSecondary }]}>
-              {timerLabel}
-            </Text>
-          </View>
+          {initialSeconds > 0 && (
+            <View style={styles.headerTimerWrap}>
+              <MaterialIcons name="access-time" size={18} color={remainingSeconds <= 60 ? c.error : c.textSecondary} />
+              <Text style={[styles.headerTimerText, { color: remainingSeconds <= 60 ? c.error : c.textSecondary }]}>
+                {timerLabel}
+              </Text>
+            </View>
+          )}
           {!isFullExam && (
             <View style={styles.headerCorrectWrap}>
               <MaterialIcons name="check-circle" size={18} color={c.success} />
@@ -602,7 +604,7 @@ export default function QuizScreen() {
               <View style={styles.explanationLoading}>
                 <ActivityIndicator size="small" color={c.primary} />
                 <Text style={[styles.explanationLoadingText, { color: c.textSecondary }]}>
-                  EhliyetAI düşünüyor…
+                  EhliyetAi düşünüyor…
                 </Text>
               </View>
             ) : explanationError ? (

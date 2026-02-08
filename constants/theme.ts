@@ -1,6 +1,5 @@
 /**
- * B Ehliyet - Tüm renk ve gölge tek yerden (Colors) yönetilir.
- * Ekranlarda sadece c = Colors[colorScheme] kullan; sabit hex yazma.
+ * All colors and shadows from Colors. Use c = Colors[colorScheme] in screens; avoid hardcoded hex.
  */
 
 import { Platform } from 'react-native';
@@ -114,7 +113,7 @@ export const Spacing = {
   xl: 32,
 };
 
-/** iOS HIG: minimum dokunma alanı 44pt */
+/** iOS HIG: minimum touch target 44pt */
 export const TOUCH_TARGET_MIN = 44;
 
 export const BorderRadius = {
@@ -126,7 +125,7 @@ export const BorderRadius = {
   full: 9999,
 };
 
-/** Kart gölgesi – tek kaynak: theme'deki c.shadow* değerleri kullanılır */
+/** Card shadow – single source: use c.shadow* from theme */
 export function getCardShadow(c: ThemeColors) {
   return {
     shadowColor: c.shadowColor,
@@ -137,7 +136,7 @@ export function getCardShadow(c: ThemeColors) {
   };
 }
 
-/** Geriye uyumluluk: light tema gölgesi (getCardShadow(Colors.light) kullanın) */
+/** Backward compatibility: light theme shadow (use getCardShadow(Colors.light)) */
 export const CardShadow = {
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 2 },

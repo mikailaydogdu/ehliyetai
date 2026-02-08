@@ -1,12 +1,11 @@
-import { ScrollView, StyleSheet, View, Image } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, Spacing, getCardShadow, BorderRadius } from '@/constants/theme';
-import { trafikIsaretleriKategorileri } from '@/data/trafikIsaretleri';
-import { getTabelaImage } from '@/data/tabelaImages';
+import { BorderRadius, Colors, Spacing, getCardShadow } from '@/constants/theme';
 import { useContent } from '@/context/ContentContext';
+import { getTabelaImage } from '@/data/tabelaImages';
+import { trafikIsaretleriKategorileri } from '@/data/trafikIsaretleri';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function IsaretlerScreen() {
   const colorScheme = useColorScheme();

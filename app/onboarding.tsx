@@ -23,7 +23,7 @@ const LOGO_IMAGE = require('../assets/images/ehliyetai.png');
 const SLIDES = [
   {
     id: '1',
-    title: 'EhliyetAI\'e Hoş Geldin',
+    title: 'EhliyetAi\'ye Hoş Geldin',
     desc: 'B sınıfı ehliyet sınavına kategorilere göre test çözerek veya 50 soruluk tam sınav simülasyonu ile hazırlan.',
     showLogo: true,
     icon: 'school' as const,
@@ -35,12 +35,19 @@ const SLIDES = [
     showLogo: false,
     icon: 'psychology' as const,
   },
+  {
+    id: '3',
+    title: 'Reklamlar hakkında',
+    desc: 'Uygulama ücretsiz sunulmaktadır. Günün sınavı, 3\'ten fazla kategorili konu testi ve tam sınav gibi bazı özelliklerde devam edebilmek için kısa reklam izlemen istenebilir. İstersen Pro üyelik ile reklamsız kullanabilirsin. Devam etmek için aşağıdaki butona tıklayarak bunu kabul etmiş olursun.',
+    showLogo: false,
+    icon: 'campaign' as const,
+  },
 ];
 
 export default function OnboardingScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
-  const { setHasCompletedOnboarding } = useAuth();
+  const { setHasCompletedOnboarding, setAdsOnboardingAccepted } = useAuth();
   const [page, setPage] = useState(0);
   const listRef = useRef<FlatList>(null);
 
@@ -49,9 +56,16 @@ export default function OnboardingScreen() {
       listRef.current?.scrollToIndex({ index: page + 1 });
       setPage(page + 1);
     } else {
-      await setHasCompletedOnboarding(true);
-      router.replace('/(tabs)');
+      // Son slayt (reklam): sadece "Onayla" ile uygulamaya girilir
+      return;
     }
+  };
+
+  const onConfirm = async () => {
+    if (page !== SLIDES.length - 1) return;
+    await setHasCompletedOnboarding(true);
+    await setAdsOnboardingAccepted(true);
+    router.replace('/(tabs)');
   };
 
   const renderItem = ({ item }: { item: (typeof SLIDES)[0] }) => (
@@ -94,15 +108,23 @@ export default function OnboardingScreen() {
             />
           ))}
         </View>
-        <Pressable
-          style={[styles.btn, { backgroundColor: c.primary }]}
-          onPress={onNext}
-          accessibilityLabel={page < SLIDES.length - 1 ? 'İleri' : 'Başla'}
-          accessibilityRole="button">
-          <Text style={[styles.btnText, { color: c.primaryContrast }]}>
-            {page < SLIDES.length - 1 ? 'İleri' : 'Başla'}
-          </Text>
-        </Pressable>
+        {page < SLIDES.length - 1 ? (
+          <Pressable
+            style={[styles.btn, { backgroundColor: c.primary }]}
+            onPress={onNext}
+            accessibilityLabel="İleri"
+            accessibilityRole="button">
+            <Text style={[styles.btnText, { color: c.primaryContrast }]}>İleri</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[styles.btn, { backgroundColor: c.primary }]}
+            onPress={onConfirm}
+            accessibilityLabel="Onayla"
+            accessibilityRole="button">
+            <Text style={[styles.btnText, { color: c.primaryContrast }]}>Onayla</Text>
+          </Pressable>
+        )}
       </View>
     </SafeAreaView>
   );

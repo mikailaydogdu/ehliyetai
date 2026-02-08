@@ -10,7 +10,7 @@ const SECTIONS = [
   {
     title: 'Giriş',
     content:
-      'EhliyetAI ("biz", "uygulama") olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu Gizlilik Politikası, mobil uygulamamızı kullanırken toplanan, kullanılan ve korunan verileri açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.',
+      'EhliyetAi ("biz", "uygulama") olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu Gizlilik Politikası, mobil uygulamamızı kullanırken toplanan, kullanılan ve korunan verileri açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.',
   },
   {
     title: 'Toplanan veriler',
@@ -22,7 +22,7 @@ const SECTIONS = [
   {
     title: 'Verilerin kullanımı',
     content:
-      'Toplanan veriler yalnızca şu amaçlarla kullanılır: uygulamanın işleyişini sağlamak (istatistikler, yanlış sorular, sınav tarihi hatırlatması), kişiselleştirilmiş içerik sunmak ve yasal yükümlülükleri yerine getirmek. Verileriniz reklam amacıyla üçüncü taraflarla paylaşılmaz.',
+      'Toplanan veriler yalnızca şu amaçlarla kullanılır: uygulamanın işleyişini sağlamak (istatistikler, yanlış sorular, sınav tarihi hatırlatması), kişiselleştirilmiş içerik sunmak ve yasal yükümlülükleri yerine getirmek. Uygulama, ücretsiz kullanımı desteklemek için üçüncü taraf reklam ağları (ör. Google AdMob) aracılığıyla reklam gösterebilir; reklam gösterimi sırasında reklam sağlayıcılarının kendi gizlilik politikaları geçerli olabilir. Verileriniz reklam amacıyla üçüncü taraflarla paylaşılmaz.',
   },
   {
     title: 'Verilerin saklanması ve üçüncü taraflar',

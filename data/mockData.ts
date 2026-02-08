@@ -120,6 +120,9 @@ export const mockCategories: Category[] = [
 /** Sınavda gösterilecek azami soru sayısı. */
 export const QUIZ_MAX_QUESTIONS = QUIZ_QUESTION_COUNT;
 
+/** Konu testi (calisma): seçilen kategorilerden karışık soru sayısı. */
+export const CALISMA_QUESTION_COUNT = 15;
+
 /**
  * Görselli sorular:
  * - İşaretler: data/tabela/*.png + tabelaImages.ts + isaretSorulari.ts (imageCode).

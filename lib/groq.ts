@@ -83,3 +83,28 @@ Neden doğru cevap "${correctOption}"? 1-2 cümleyle, anlaşılır Türkçe aç�
   const content = await groqChat(user, undefined, { maxTokens: 256 });
   return content;
 }
+
+/**
+ * EhliyetAi öğrenme asistanı: kullanıcı sorar, ehliyet/trafik konusunda eğitici bilgi verilir.
+ */
+export async function askEhliyetAiLearning(question: string): Promise<string> {
+  const system = `Sen EhliyetAi öğrenme asistanısın. B sınıfı ehliyet sınavına hazırlanan kullanıcıya trafik kuralları, ilk yardım, motor, trafik işaretleri vb. konularda kısa, net ve eğitici bilgi ver.
+Kurallar: Sadece Türkçe yaz. Sadece bilgi ver; başlık, "EhliyetAi:" gibi ön ek veya emoji ekleme. 2-5 cümleyle doğrudan açıkla. Resmi kurallara uygun bilgi ver.`;
+
+  const content = await groqChat(question.trim(), system, { maxTokens: 512 });
+  return content;
+}
+
+/**
+ * Sınav Stratejisi: psikolojik destek / sınav taktikleri (süre yönetimi, soru sırası, heyecan kontrolü).
+ */
+export async function generateSinavStratejisi(): Promise<string> {
+  const system = `Sen ehliyet sınavına hazırlanan adaylara psikolojik destek ve sınav stratejisi veren bir danışmansın.
+Konular: Süre yönetimi (sınırlı sürede nasıl ilerlenir), hangi soruyu sona bırakmalı (zor soruda takılırsan geç, işaretle ve sona bırak gibi), heyecan kontrolü (sınav öncesi ve sırasında).
+Kurallar: Sadece Türkçe yaz. Analiz tarzında, madde madde, net ve uygulanabilir notlar ver. Örnek cümleler kullan: "Zor soruda takılırsan geç, işaretle ve sona bırak." gibi. Başlık veya "AI:" ekleme. Emoji kullanma. 8-15 madde veya kısa paragraflar halinde yaz.`;
+
+  const user = `B sınıfı ehliyet sınavına hazırlanan bir aday için sınav stratejisi ve psikolojik destek notları yaz. Süre yönetimi, hangi soruyu sona bırakmalı, heyecan kontrolü konularını analiz tarzında, uygulanabilir notlarla açıkla.`;
+
+  const content = await groqChat(user, system, { maxTokens: 1024 });
+  return content;
+}

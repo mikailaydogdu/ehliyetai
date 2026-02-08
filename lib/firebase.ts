@@ -1,6 +1,6 @@
 /**
- * Firebase Realtime Database bağlantısı.
- * Sorular ve notlar buradan okunur; soru bildirimleri (reports) yazılır.
+ * Firebase Realtime Database connection.
+ * Questions and notes are read from here; question reports are written.
  */
 
 import { getDatabase, ref, get, push, set, type Database } from 'firebase/database';
@@ -8,7 +8,7 @@ import { initializeApp, type FirebaseApp } from 'firebase/app';
 
 const FIREBASE_CONFIG = {
   databaseURL: 'https://ehliyetai-e3b91-default-rtdb.firebaseio.com',
-  // Realtime Database okuma için databaseURL yeterli; gerekirse Firebase Console'dan apiKey ekleyebilirsin.
+  // databaseURL is enough for Realtime Database read; add apiKey from Firebase Console if needed.
 };
 
 let app: FirebaseApp | null = null;
@@ -22,7 +22,7 @@ function getDb(): Database {
   return db;
 }
 
-/** Tek bir path'ten soru dizisini okur. */
+/** Reads question array from a single path. */
 async function fetchPath(path: string): Promise<unknown[]> {
   const database = getDb();
   const snapshot = await get(ref(database, path));
@@ -33,12 +33,12 @@ async function fetchPath(path: string): Promise<unknown[]> {
   return [];
 }
 
-/** Firebase'den tüm soruları döndürür. */
+/** Returns all questions from Firebase. */
 export async function fetchQuestionsFromFirebase(): Promise<unknown[]> {
   return fetchPath('questions');
 }
 
-/** Firebase'den notes dizisini alır. */
+/** Fetches notes array from Firebase. */
 export async function fetchNotesFromFirebase(): Promise<unknown[]> {
   return fetchPath('notes');
 }
@@ -50,7 +50,15 @@ export type ReportReason =
   | 'cevap_yanlis_isaretlenmis'
   | 'diger';
 
-/** Soru bildirimi: reports path'ine yeni kayıt ekler. */
+export const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'soru_yanlis', label: 'Soru yanlış' },
+  { value: 'soru_hatali', label: 'Soru hatalı' },
+  { value: 'cevap_yanlis', label: 'Cevap yanlış' },
+  { value: 'cevap_yanlis_isaretlenmis', label: 'Cevap yanlış işaretlenmiş' },
+  { value: 'diger', label: 'Diğer' },
+];
+
+/** Question report: adds new record to reports path. */
 export async function submitQuestionReport(payload: {
   questionId: string;
   reason: ReportReason;

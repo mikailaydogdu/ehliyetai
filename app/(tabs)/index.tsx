@@ -6,11 +6,10 @@ import { ActivityIndicator, Image, Modal, Platform, Pressable, ScrollView, Style
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BorderRadius, Colors, getCardShadow, Spacing } from '@/constants/theme';
-import { showRewardedAd } from '@/lib/ads';
 import { useExamDate } from '@/context/ExamDateContext';
 import { useStats } from '@/context/StatsContext';
-import { useWrongQuestions } from '@/context/WrongQuestionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { showRewardedAd } from '@/lib/ads';
 
 const APP_LOGO = require('@/assets/images/ehliyetai.png');
 
@@ -44,7 +43,6 @@ export default function AnasayfaScreen() {
   const insets = useSafeAreaInsets();
   const { examDate, daysLeft, setExamDate } = useExamDate();
   const { results, totalQuestionsCompleted } = useStats();
-  const { wrongQuestions } = useWrongQuestions();
 
   const consecutiveDays = getConsecutiveDays(results.map((r) => r.date));
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -85,22 +83,24 @@ export default function AnasayfaScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}>
+        {/* Header – düz alan: logo sol, yazı orta, sağ boşluk */}
         <View style={styles.heroBlock}>
           <View style={styles.bannerRow}>
-            <View style={styles.bannerLeft}>
-              <Text style={[styles.bannerTitle, { color: c.text }]}>EhliyetAl'a hoş geldiniz</Text>
-            </View>
-            <View style={styles.bannerRight}>
+            <View style={styles.bannerIconWrap}>
               <Image source={APP_LOGO} style={styles.bannerLogo} resizeMode="contain" />
             </View>
+            <View style={styles.bannerCenter}>
+              <Text style={[styles.bannerTitle, { color: c.text }]}>Hoşgeldiniz</Text>
+            </View>
+            <View style={styles.bannerPlaceholder} />
           </View>
         </View>
 
-        {/* Günün Sınavı */}
+        {/* Günün Sınavı – tekli büyük kart */}
         <TouchableOpacity
           style={[styles.dailyCardOuter, getCardShadow(c)]}
           onPress={() => setShowDailyExamPopup(true)}
-          activeOpacity={0.85}
+          activeOpacity={0.9}
           accessibilityLabel="Günün Sınavı"
           accessibilityHint="10 soruluk günlük deneme"
           accessibilityRole="button">
@@ -118,7 +118,7 @@ export default function AnasayfaScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Sınav tarihi: Günün Sınavı'nın altında, tıklanınca takvim açılır */}
+        {/* Sınav tarihi – tekli kart */}
         <TouchableOpacity
           style={[styles.examDateRow, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
           onPress={openDatePicker}
@@ -179,7 +179,7 @@ export default function AnasayfaScreen() {
           </View>
         )}
 
-        {/* Başarı kartı: üst üste gün + toplam soru */}
+        {/* Başarı – tekli kart */}
         {(consecutiveDays > 0 || totalQuestionsCompleted > 0) && (
           <View style={[styles.achievementCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
             {consecutiveDays > 0 && (
@@ -201,25 +201,8 @@ export default function AnasayfaScreen() {
           </View>
         )}
 
-        {/* Yanlış Yapılan Sorular + Sınav Sonuçları - ikili */}
+        {/* İkili kartlar: Sınav Sonuçları + İstatistikler */}
         <View style={styles.twinRow}>
-          <TouchableOpacity
-            style={[styles.twinCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
-            onPress={() => router.push('/yanlis-sorular' as never)}
-            activeOpacity={0.85}
-            accessibilityLabel="Yanlışlar"
-            accessibilityHint="Yanlış yaptığınız soruları tekrar çözün">
-            <View style={[styles.twinIconWrap, { backgroundColor: c.selectedBg }]}>
-              <MaterialIcons name="error-outline" size={26} color={c.primary} />
-            </View>
-            <Text style={[styles.twinTitle, { color: c.text }]}>Yanlışlar</Text>
-            <Text style={[styles.twinSubtitle, { color: c.textSecondary }]} numberOfLines={2}>
-              {wrongQuestions.length > 0
-                ? `${wrongQuestions.length} soru`
-                : 'Tekrar çöz'}
-            </Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={[styles.twinCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
             onPress={() => router.push('/sinav-sonuclari' as never)}
@@ -234,6 +217,22 @@ export default function AnasayfaScreen() {
               {results.length > 0
                 ? `${results.length} sonuç`
                 : 'Sonuçları gör'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.twinCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
+            onPress={() => router.push('/istatistikler' as never)}
+            activeOpacity={0.85}
+            accessibilityLabel="İstatistikler"
+            accessibilityHint="İstatistikleri görüntüle">
+            <View style={[styles.twinIconWrap, { backgroundColor: c.selectedBg }]}>
+              <MaterialIcons name="bar-chart" size={26} color={c.primary} />
+            </View>
+            <Text style={[styles.twinTitle, { color: c.text }]}>İstatistikler</Text>
+            <Text style={[styles.twinSubtitle, { color: c.textSecondary }]} numberOfLines={2}>
+              {totalQuestionsCompleted > 0
+                ? `${totalQuestionsCompleted} soru`
+                : 'İstatistikleri gör'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -322,17 +321,23 @@ const styles = StyleSheet.create({
   bannerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  bannerLeft: { flex: 1, paddingRight: Spacing.md, justifyContent: 'center' },
-  bannerTitle: { fontSize: 20, fontWeight: '700' },
-  bannerRight: { justifyContent: 'center', alignItems: 'center' },
+  bannerIconWrap: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center' },
   bannerLogo: { width: 80, height: 80 },
+  bannerCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+  },
+  bannerPlaceholder: { width: 80, height: 80 },
+  bannerSubtitle: { fontSize: 13, fontWeight: '500' },
+  bannerTitle: { fontSize: 22, fontWeight: '700', marginTop: 2 },
   examDateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     marginBottom: Spacing.md,

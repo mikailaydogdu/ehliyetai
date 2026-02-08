@@ -1,20 +1,25 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-const REWARDED_AD_UNIT_ID = 'ca-app-pub-9486767362549469/1499810426';
+const REWARDED_AD_UNIT_ID_ANDROID = 'ca-app-pub-9486767362549469/1499810426';
+const REWARDED_AD_UNIT_ID_IOS = 'ca-app-pub-9486767362549469/3391041820';
+
+function getRewardedAdUnitId(): string {
+  return Platform.OS === 'ios' ? REWARDED_AD_UNIT_ID_IOS : REWARDED_AD_UNIT_ID_ANDROID;
+}
 
 export type RewardedAdResult = 'rewarded' | 'shown' | 'dismissed' | 'error' | 'not_loaded';
 
 /**
- * Ödüllü reklamı yükler ve gösterir. Sadece Android development/production build'de AdMob kullanır.
- * Expo Go'da native modül yok; reklam atlanır, onRewarded hemen çağrılır.
+ * Loads and shows rewarded ad. Uses AdMob on Android/iOS dev/production build.
+ * No native module in Expo Go; ad is skipped, onRewarded is called immediately.
  */
 export function showRewardedAd(options: {
   onRewarded: () => void;
   onDone?: (result: RewardedAdResult) => void;
 }): void {
-  // iOS / web veya Expo Go: reklam gösterme, doğrudan ödül ver (sınava geç)
-  if (Platform.OS !== 'android' || Constants.appOwnership === 'expo') {
+  // Web or Expo Go: do not show ad, grant reward directly
+  if (Platform.OS === 'web' || Constants.appOwnership === 'expo') {
     options.onRewarded();
     options.onDone?.('rewarded');
     return;
@@ -22,7 +27,7 @@ export function showRewardedAd(options: {
 
   import('react-native-google-mobile-ads').then(
     ({ RewardedAd, RewardedAdEventType, AdEventType }) => {
-      const rewarded = RewardedAd.createForAdRequest(REWARDED_AD_UNIT_ID);
+      const rewarded = RewardedAd.createForAdRequest(getRewardedAdUnitId());
 
       const unloadLoaded = rewarded.addAdEventListener(
         RewardedAdEventType.LOADED,
@@ -69,7 +74,7 @@ export function showRewardedAd(options: {
         }
       );
 
-      // Load hatası AdEventType.ERROR listener ile yakalanıyor
+      // Load error is handled by AdEventType.ERROR listener
       rewarded.load();
     }
   ).catch(() => {

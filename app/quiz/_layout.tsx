@@ -6,7 +6,6 @@ export default function QuizLayout() {
     <LastQuizWrongProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="yanlis-sorular" options={{ title: 'Yanlış Sorular' }} />
       </Stack>
     </LastQuizWrongProvider>
   );

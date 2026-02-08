@@ -1,17 +1,16 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
 
 import { BorderRadius, Colors, getCardShadow, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
 import {
-  EXAM_DURATION_MINUTES,
-  EXAM_ILK_YARDIM,
-  EXAM_MOTOR,
-  EXAM_TOTAL_QUESTIONS,
-  EXAM_TRAFIK,
-  EXAM_TRAFIK_ADABI,
+    EXAM_DURATION_MINUTES,
+    EXAM_ILK_YARDIM,
+    EXAM_MOTOR,
+    EXAM_TOTAL_QUESTIONS,
+    EXAM_TRAFIK,
+    EXAM_TRAFIK_ADABI,
 } from '@/data/mockData';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 

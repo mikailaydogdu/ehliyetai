@@ -68,13 +68,14 @@ function RootStack() {
           <Stack.Screen name="offline" options={{ gestureEnabled: false, title: 'Bağlantı Yok' }} />
           <Stack.Screen name="onboarding" options={{ gestureEnabled: false, title: 'Hoş Geldin' }} />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="calisma" options={{ title: 'Konu Testi' }} />
           <Stack.Screen name="sinav-baslangic" options={{ title: 'Sınav Başlangıç' }} />
           <Stack.Screen name="quiz" options={{ title: 'Sınav', gestureEnabled: false }} />
-          <Stack.Screen name="yanlis-sorular" options={{ title: 'Yanlışlar' }} />
           <Stack.Screen name="profil-guncelleme" options={{ title: 'Profil Güncelleme' }} />
           <Stack.Screen name="yardim" options={{ title: 'Yardım' }} />
           <Stack.Screen name="istatistikler" options={{ title: 'İstatistikler' }} />
           <Stack.Screen name="sinav-sonuclari" options={{ title: 'Sınav Sonuçları' }} />
+          <Stack.Screen name="sinav-stratejisi" options={{ title: 'Sınav Stratejisi' }} />
           <Stack.Screen name="uygulama-hakkinda" options={{ title: 'Uygulama Hakkında' }} />
           <Stack.Screen name="gizlilik" options={{ title: 'Gizlilik Politikası' }} />
           <Stack.Screen name="kullanim-kosullari" options={{ title: 'Kullanım Koşulları' }} />
@@ -90,7 +91,7 @@ SplashScreen.preventAutoHideAsync();
 
 function AdMobInit() {
   useEffect(() => {
-    // Expo Go'da AdMob native modülü yok; sadece development/production build'de başlat
+    // No AdMob native module in Expo Go; init only in dev/production build
     if (Platform.OS === 'android' && Constants.appOwnership !== 'expo') {
       import('react-native-google-mobile-ads')
         .then(({ default: mobileAds }) => mobileAds().initialize())

@@ -7,10 +7,10 @@ const THEME_KEY = '@fersa_theme';
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
-  /** Kullanıcının seçimi: aydınlık, karanlık veya sistemi takip et */
+  /** User preference: light, dark, or follow system */
   themePreference: ThemePreference;
   setThemePreference: (value: ThemePreference) => Promise<void>;
-  /** Uygulamanın şu an kullandığı tema (preference + sistem) */
+  /** Current theme in use (preference + system) */
   colorScheme: 'light' | 'dark';
 }
 

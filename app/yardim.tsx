@@ -33,7 +33,7 @@ export default function YardimScreen() {
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
           <Text style={[styles.cardTitle, { color: c.text }]}>Sıkça Sorulan Sorular</Text>
           <Text style={[styles.paragraph, { color: c.textSecondary }]}>
-            EhliyetAI uygulamasında kategorilere göre test çözebilir veya tam sınav simülasyonu yapabilirsin. Yanlış
+            EhliyetAi uygulamasında kategorilere göre test çözebilir veya tam sınav simülasyonu yapabilirsin. Yanlış
             yaptığın sorular otomatik kaydedilir ve "Yanlış Yaptığım Sorular" bölümünden tekrar çözebilirsin.
           </Text>
           <Text style={[styles.paragraph, { color: c.textSecondary }]}>

@@ -34,6 +34,43 @@ export default function SinavScreen() {
   const [completedFullExams, setCompletedFullExams] = useState<number[]>([]);
   const [examPopupExamNum, setExamPopupExamNum] = useState<number | null>(null);
   const [adLoading, setAdLoading] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  /** 3+ kategori seçilip Testi Başlat’a basıldığında reklam popup için saklanan kategori listesi */
+  const [konuTestAdPopupCategories, setKonuTestAdPopupCategories] = useState<string | null>(null);
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllCategories = () => {
+    if (selectedCategories.size === categories.length) {
+      setSelectedCategories(new Set());
+    } else {
+      setSelectedCategories(new Set(categories.map((c) => c.id)));
+    }
+  };
+
+  const selectedCategoryCount = selectedCategories.size;
+  const allCategoriesSelected = selectedCategoryCount === categories.length;
+
+  const handleKonuTestStart = () => {
+    const ids = [...selectedCategories].join(',');
+    if (selectedCategoryCount > 3) {
+      setKonuTestAdPopupCategories(ids);
+      return;
+    }
+    router.push({ pathname: '/calisma/[category]', params: { category: ids } } as never);
+  };
+
+  const closeKonuTestAdPopup = () => {
+    setKonuTestAdPopupCategories(null);
+    setAdLoading(false);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -46,7 +83,7 @@ export default function SinavScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={[]}>
-      {/* Konu Testleri / Tam Sınav sekmeleri */}
+      {/* Konu Testleri / E-Sınav sekmeleri */}
       <View style={[styles.tabRow, { borderBottomColor: c.border }]}>
         <TouchableOpacity
           style={styles.tabButton}
@@ -62,7 +99,7 @@ export default function SinavScreen() {
           onPress={() => setActiveTab('tam')}
           activeOpacity={0.7}>
           <Text style={[styles.tabLabel, { color: activeTab === 'tam' ? c.primary : c.textSecondary }]}>
-            Tam Sınav
+            E-Sınav
           </Text>
           <View style={[styles.tabUnderline, { backgroundColor: activeTab === 'tam' ? c.primary : 'transparent' }]} />
         </TouchableOpacity>
@@ -75,29 +112,65 @@ export default function SinavScreen() {
         {activeTab === 'konu' && (
         <>
         <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: c.text }]}>Kategori Seç</Text>
           <Text style={[styles.sectionSubtitle, { color: c.textSecondary }]}>
-            Kategorilere göre 10 soruluk test çözün.
+            Seçtiğin kategorilerden 15 soru gelecek
           </Text>
-          <View style={styles.topicGrid}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[
-                  styles.topicCard,
-                  { ...getCardShadow(c), backgroundColor: c.card, borderColor: c.border },
-                ]}
-                onPress={() => router.push({ pathname: '/quiz', params: { category: cat.id } } as never)}
-                activeOpacity={0.7}>
-                <View style={[styles.topicIconWrap, { backgroundColor: c.selectedBg }]}>
-                  <MaterialIcons name={CATEGORY_ICONS[cat.icon] ?? 'folder'} size={24} color={c.primary} />
-                </View>
-                <Text style={[styles.topicName, { color: c.text }]} numberOfLines={2}>
-                  {cat.name}
-                </Text>
-                <MaterialIcons name="chevron-right" size={20} color={c.textSecondary} />
-              </TouchableOpacity>
-            ))}
+
+          <TouchableOpacity
+            style={[styles.selectAllRow, { borderBottomColor: c.border }]}
+            onPress={selectAllCategories}
+            activeOpacity={0.7}>
+            <MaterialIcons
+              name={allCategoriesSelected ? 'check-box' : 'check-box-outline-blank'}
+              size={24}
+              color={allCategoriesSelected ? c.primary : c.textSecondary}
+            />
+            <Text style={[styles.selectAllText, { color: c.text }]}>Tümünü seç</Text>
+          </TouchableOpacity>
+
+          <View style={styles.topicList}>
+            {categories.map((cat) => {
+              const isChecked = selectedCategories.has(cat.id);
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.topicCard,
+                    { ...getCardShadow(c), backgroundColor: c.card, borderColor: isChecked ? c.primary : c.border },
+                  ]}
+                  onPress={() => toggleCategory(cat.id)}
+                  activeOpacity={0.7}>
+                  <MaterialIcons
+                    name={isChecked ? 'check-box' : 'check-box-outline-blank'}
+                    size={24}
+                    color={isChecked ? c.primary : c.textSecondary}
+                  />
+                  <View style={[styles.topicIconWrap, { backgroundColor: c.primary }]}>
+                    <MaterialIcons name={CATEGORY_ICONS[cat.icon] ?? 'folder'} size={18} color={c.primaryContrast} />
+                  </View>
+                  <Text style={[styles.topicName, { color: c.text }]} numberOfLines={2}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
+          <TouchableOpacity
+            style={[
+              styles.konuStartBtn,
+              { backgroundColor: selectedCategoryCount > 0 ? c.primary : c.border },
+            ]}
+            onPress={handleKonuTestStart}
+            disabled={selectedCategoryCount === 0}
+            activeOpacity={0.8}>
+            <Text style={[styles.konuStartBtnText, { color: selectedCategoryCount > 0 ? c.primaryContrast : c.textSecondary }]}>
+              {selectedCategoryCount > 0
+                ? `Testi Başlat (${selectedCategoryCount} kategori)`
+                : 'Kategori seç'}
+            </Text>
+          </TouchableOpacity>
         </View>
         </>
         )}
@@ -161,7 +234,7 @@ export default function SinavScreen() {
         )}
       </ScrollView>
 
-      {/* Tam sınav tıklanınca: reklam veya Pro üyelik popup */}
+      {/* E-Sınav tıklanınca: reklam veya Pro üyelik popup */}
       <Modal
         visible={examPopupExamNum !== null}
         transparent
@@ -230,6 +303,75 @@ export default function SinavScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Konu testi: 3’ten fazla kategori seçilince reklam popup */}
+      <Modal
+        visible={konuTestAdPopupCategories !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeKonuTestAdPopup}>
+        <Pressable style={styles.modalOverlay} onPress={closeKonuTestAdPopup}>
+          <Pressable style={[styles.modalCard, { backgroundColor: c.card, borderColor: c.border }]} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: c.text }]}>3’ten fazla kategori seçtiniz</Text>
+              <TouchableOpacity onPress={closeKonuTestAdPopup} hitSlop={12} style={styles.modalClose}>
+                <MaterialIcons name="close" size={24} color={c.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.modalSubtitle, { color: c.textSecondary }]}>
+              Konu testine devam etmek için reklam izleyebilir veya Pro üyelik ile reklamsız kullanabilirsiniz.
+            </Text>
+            <TouchableOpacity
+              style={[styles.modalBtn, styles.modalBtnPrimary, { backgroundColor: c.primary }]}
+              onPress={() => {
+                const categoryIds = konuTestAdPopupCategories;
+                setAdLoading(true);
+                showRewardedAd({
+                  onRewarded: () => {
+                    closeKonuTestAdPopup();
+                    if (categoryIds) {
+                      router.push({ pathname: '/calisma/[category]', params: { category: categoryIds } } as never);
+                    }
+                  },
+                  onDone: (result) => {
+                    setAdLoading(false);
+                    if (result === 'error') closeKonuTestAdPopup();
+                  },
+                });
+              }}
+              disabled={adLoading}
+              activeOpacity={0.8}>
+              {adLoading ? (
+                <>
+                  <ActivityIndicator size="small" color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam yükleniyor</Text>
+                </>
+              ) : (
+                <>
+                  <MaterialIcons name="play-circle-outline" size={22} color={c.primaryContrast} />
+                  <Text style={[styles.modalBtnText, { color: c.primaryContrast }]}>Reklam izle</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalBtn, styles.modalBtnOutline, { borderColor: c.border }]}
+              onPress={() => {
+                closeKonuTestAdPopup();
+                router.push('/pro-uyelik' as never);
+              }}
+              activeOpacity={0.8}>
+              <MaterialIcons name="star" size={22} color={c.primary} />
+              <Text style={[styles.modalBtnTextOutline, { color: c.text }]}>Pro üyelik</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalCancelWrap}
+              onPress={closeKonuTestAdPopup}
+              activeOpacity={0.7}>
+              <Text style={[styles.modalCancel, { color: c.textSecondary }]}>İptal</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -267,36 +409,51 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: Spacing.xl,
   },
+  sectionTitle: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
   sectionSubtitle: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
-  topicGrid: {
+  selectAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.sm,
+    paddingBottom: Spacing.md,
+    marginBottom: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  selectAllText: { fontSize: 15, fontWeight: '600' },
+  topicList: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
   topicCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    marginBottom: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
+    gap: Spacing.sm,
   },
   topicIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
   },
   topicName: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
   },
+  konuStartBtn: {
+    paddingVertical: 16,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  konuStartBtnText: { fontSize: 17, fontWeight: '700' },
   examList: {
     gap: Spacing.sm,
     marginBottom: Spacing.lg,

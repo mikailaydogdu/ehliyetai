@@ -1,12 +1,12 @@
-// B Ehliyet Sınavı - Veri tipleri (JSON ile uyumlu)
+// Driving license exam – data types (JSON-compatible)
 
 export interface Lesson {
   id: string;
   order: number;
   title: string;
-  /** Kısa özet (bir cümle). */
+  /** Short summary (one sentence). */
   summary?: string;
-  content: string; // Konu anlatımı
+  content: string;
   questions: Question[];
 }
 
@@ -18,9 +18,9 @@ export interface Question {
   categoryId: string;
   lessonId?: string;
   explanation?: string;
-  /** İşaret sorularında: tabela görseli kodu (örn. T-1a). Varsa quiz’te görsel gösterilir. */
+  /** Sign questions: traffic sign image code (örn. T-1a). Varsa quiz’te görsel gösterilir. */
   imageCode?: string;
-  /** Şık görselleri (4 elemanlı dizi; görsel yoksa undefined). */
+  /** Option images (4-item array; undefined if no image). */
   optionImages?: (string | undefined)[];
 }
 
@@ -29,20 +29,20 @@ export interface Category {
   order: number;
   name: string;
   icon: string;
-  description?: string; // Kategoriye tıklanınca gösterilen kısa açıklama
-  /** Kategori kısa özeti (konu anlatımı sayfasında üstte). */
+  description?: string;
+  /** Category short summary (shown at top of lesson page). */
   summary?: string;
   lessons: Lesson[];
 }
 
-// Sınav sonucu - istatistikler için
+/** Quiz result – for stats */
 export interface QuizResult {
   id: string;
   date: string;
   score: number;
   totalQuestions: number;
   wrongAnswers: WrongAnswer[];
-  /** Hangi sınav: "Günün Sınavı", "Tam Sınav 1", kategori adı vb. */
+  /** Which exam: "Daily Exam", "Full Exam 1", category name, etc. */
   examLabel?: string;
 }
 
@@ -53,15 +53,15 @@ export interface WrongAnswer {
   categoryName: string;
   selectedIndex: number;
   correctIndex: number;
-  /** Yanlış sorular listesinde tekrar çözmek için şıklar (quiz bitince kaydedilir). */
+  /** Options for wrong-questions list (saved when quiz ends). */
   options?: string[];
-  /** İşaret sorusu ise görsel kodu. */
+  /** Image code if sign question. */
   imageCode?: string;
-  /** Şık görselleri. */
+  /** Option images. */
   optionImages?: (string | undefined)[];
-  /** Yapay zeka ile üretilen, soruyla ilgili not (yerelde saklanır). */
+  /** AI-generated note for this question (stored locally). */
   aiNote?: string;
 }
 
-/** Kaydedilmiş yanlış soru – tekrar çözme ekranında gösterilmek üzere options/imageCode ile. */
+/** Saved wrong question – shown on wrong-questions screen with options/imageCode. */
 export type SavedWrongQuestion = WrongAnswer & { options: string[] };

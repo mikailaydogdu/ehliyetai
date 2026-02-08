@@ -1,5 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { getOnboardingDone, getProfileName, setOnboardingDone, setProfileName } from '@/lib/localStorage';
+import {
+  getAdsOnboardingAccepted,
+  getOnboardingDone,
+  getProfileName,
+  setAdsOnboardingAccepted as setAdsOnboardingAcceptedStorage,
+  setOnboardingDone,
+  setProfileName,
+} from '@/lib/localStorage';
 
 export interface User {
   uid: string;
@@ -11,8 +18,10 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   hasCompletedOnboarding: boolean | null;
+  hasAcceptedAdsOnboarding: boolean | null;
   updateUser: (name: string) => Promise<void>;
   setHasCompletedOnboarding: (value: boolean) => Promise<void>;
+  setAdsOnboardingAccepted: (value: boolean) => Promise<void>;
   reloadFromStorage: () => Promise<void>;
 }
 
@@ -24,18 +33,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState<boolean | null>(null);
+  const [hasAcceptedAdsOnboarding, setHasAcceptedAdsOnboardingState] = useState<boolean | null>(null);
 
   useEffect(() => {
-    Promise.all([getOnboardingDone(), getProfileName()]).then(([onboarding, name]) => {
-      setHasCompletedOnboardingState(onboarding);
-      setUser({ uid: LOCAL_UID, email: null, name: name ?? 'Kullanıcı' });
-      setIsLoading(false);
-    });
+    Promise.all([getOnboardingDone(), getAdsOnboardingAccepted(), getProfileName()]).then(
+      ([onboarding, adsAccepted, name]) => {
+        setHasCompletedOnboardingState(onboarding);
+        setHasAcceptedAdsOnboardingState(adsAccepted);
+        setUser({ uid: LOCAL_UID, email: null, name: name ?? 'Kullanıcı' });
+        setIsLoading(false);
+      }
+    );
   }, []);
 
   const setHasCompletedOnboarding = useCallback(async (value: boolean) => {
     await setOnboardingDone(value);
     setHasCompletedOnboardingState(value);
+  }, []);
+
+  const setAdsOnboardingAccepted = useCallback(async (value: boolean) => {
+    await setAdsOnboardingAcceptedStorage(value);
+    setHasAcceptedAdsOnboardingState(value);
   }, []);
 
   const updateUser = useCallback(async (name: string) => {
@@ -53,8 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     isLoading,
     hasCompletedOnboarding,
+    hasAcceptedAdsOnboarding,
     updateUser,
     setHasCompletedOnboarding,
+    setAdsOnboardingAccepted,
     reloadFromStorage,
   };
 
