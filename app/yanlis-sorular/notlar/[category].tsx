@@ -63,12 +63,18 @@ export default function NotlarCategoryScreen() {
         ) : (
           <>
             {notesInCategory.slice(0, visibleCount).map((q) => {
+              const questionImgSrc = q.imageCode ? getQuestionImageSource(q.imageCode) : undefined;
               const correctOptionCode = q.optionImages?.[q.correctIndex];
               const correctOptionImgSrc = correctOptionCode ? getQuestionImageSource(correctOptionCode) : undefined;
               return (
                 <View
                   key={q.questionId}
                   style={[styles.noteCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+                  {questionImgSrc && (
+                    <View style={styles.questionImageWrap}>
+                      <Image source={questionImgSrc} style={styles.questionImage} resizeMode="contain" />
+                    </View>
+                  )}
                   {correctOptionImgSrc && (
                     <View style={styles.imageWrap}>
                       <Text style={[styles.correctLabel, { color: c.textSecondary }]}>
@@ -131,6 +137,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.md,
   },
+  questionImageWrap: { width: '100%', alignItems: 'center', marginBottom: Spacing.md },
+  questionImage: { width: '100%', height: 220, borderRadius: BorderRadius.sm },
   imageWrap: { alignItems: 'center', marginBottom: Spacing.md },
   correctLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
   noteImage: { width: 200, height: 160, borderRadius: BorderRadius.sm },

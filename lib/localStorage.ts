@@ -12,6 +12,7 @@ const KEY_WRONG_QUESTIONS = '@fersa_wrong_questions';
 const KEY_QUIZ_RESULTS = '@fersa_quiz_results';
 const MAX_QUIZ_RESULTS = 10;
 const KEY_COMPLETED_FULL_EXAMS = '@fersa_completed_full_exams';
+const KEY_TOTAL_QUESTIONS_COMPLETED = '@fersa_total_questions_completed';
 
 export async function getOnboardingDone(): Promise<boolean> {
   const v = await AsyncStorage.getItem(KEY_ONBOARDING);
@@ -89,6 +90,22 @@ export async function addQuizResultLocal(
   };
   const updated = [newItem, ...existing].slice(0, MAX_QUIZ_RESULTS);
   await AsyncStorage.setItem(KEY_QUIZ_RESULTS, JSON.stringify(updated));
+
+  const totalSoFar = await getTotalQuestionsCompleted();
+  await AsyncStorage.setItem(KEY_TOTAL_QUESTIONS_COMPLETED, String(totalSoFar + result.totalQuestions));
+}
+
+/** Tüm zamanlar toplam çözülen soru sayısı (son 10 sınavla sınırlı değil). */
+export async function getTotalQuestionsCompleted(): Promise<number> {
+  const v = await AsyncStorage.getItem(KEY_TOTAL_QUESTIONS_COMPLETED);
+  if (v != null) {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n) && n >= 0) return n;
+  }
+  const list = await getQuizResults();
+  const sum = list.reduce((s, r) => s + r.totalQuestions, 0);
+  await AsyncStorage.setItem(KEY_TOTAL_QUESTIONS_COMPLETED, String(sum));
+  return sum;
 }
 
 /** Tam sınav listesi: tamamlanan sınav numaraları (1–20). Sınav 2’ye ancak Sınav 1 tamamlandıktan sonra gidilir. */
@@ -119,5 +136,6 @@ export async function clearAllProfileData(): Promise<void> {
     KEY_WRONG_QUESTIONS,
     KEY_QUIZ_RESULTS,
     KEY_COMPLETED_FULL_EXAMS,
+    KEY_TOTAL_QUESTIONS_COMPLETED,
   ]);
 }

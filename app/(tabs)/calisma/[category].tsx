@@ -20,12 +20,13 @@ import { captureRef } from 'react-native-view-shot';
 
 import { BorderRadius, Colors, getCardShadow, Spacing, TOUCH_TARGET_MIN } from '@/constants/theme';
 import { useContent } from '@/context/ContentContext';
+import { useStats } from '@/context/StatsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getQuestionImageSource } from '@/data/tabelaImages';
 import { shuffleArray } from '@/data/mockData';
 import { generateWrongExplanation } from '@/lib/groq';
 import { submitQuestionReport, type ReportReason } from '@/lib/firebase';
-import type { Question } from '@/types';
+import type { Question, WrongAnswer } from '@/types';
 
 const REPORT_REASONS: { value: ReportReason; label: string }[] = [
   { value: 'soru_yanlis', label: 'Soru yanlış' },
@@ -46,6 +47,7 @@ export default function CalismaCategoryScreen() {
   const insets = useSafeAreaInsets();
 
   const { categories, questions: allQuestions, isContentLoading } = useContent();
+  const { addResult } = useStats();
 
   const categoryIds = (category ?? '').split(',').filter(Boolean);
   const displayName = categoryIds.length > 2
@@ -132,12 +134,38 @@ export default function CalismaCategoryScreen() {
       .finally(() => setLoadingExplanation(false));
   }, [q, selectedIndex]);
 
+  const buildWrongAnswersFromAnswers = useCallback(
+    (ans: Record<number, number>, qs: Question[]): WrongAnswer[] => {
+      const wrong: WrongAnswer[] = [];
+      qs.forEach((question, i) => {
+        const sel = ans[i];
+        if (sel === undefined || sel === question.correctIndex) return;
+        const categoryName = categories.find((c) => c.id === question.categoryId)?.name ?? question.categoryId;
+        wrong.push({
+          questionId: question.id,
+          questionText: question.text,
+          categoryId: question.categoryId,
+          categoryName,
+          selectedIndex: sel,
+          correctIndex: question.correctIndex,
+          options: question.options,
+          imageCode: question.imageCode,
+          optionImages: question.optionImages,
+        });
+      });
+      return wrong;
+    },
+    [categories]
+  );
+
   const handleNext = () => {
     setSelectedIndex(null);
     setExplanation(null);
     setLoadingExplanation(false);
     setExplanationError(false);
     if (isLast) {
+      const wrongAnswers = buildWrongAnswersFromAnswers(answersByIndex, questions);
+      addResult(correctCount, total, wrongAnswers, displayName);
       setFinished(true);
       return;
     }

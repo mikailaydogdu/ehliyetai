@@ -19,13 +19,34 @@ function formatExamDate(iso: string): string {
   return `${d}.${m}.${y}`;
 }
 
+function previousDay(isoDate: string): string {
+  const d = new Date(isoDate + 'T12:00:00.000Z');
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function getConsecutiveDays(resultDates: string[]): number {
+  if (resultDates.length === 0) return 0;
+  const uniq = [...new Set(resultDates.map((d) => d.slice(0, 10)))].sort().reverse();
+  let streak = 0;
+  let expected = uniq[0];
+  for (const d of uniq) {
+    if (d !== expected) break;
+    streak++;
+    expected = previousDay(expected);
+  }
+  return streak;
+}
+
 export default function AnasayfaScreen() {
   const colorScheme = useColorScheme();
   const c = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
   const { examDate, daysLeft, setExamDate } = useExamDate();
-  const { results } = useStats();
+  const { results, totalQuestionsCompleted } = useStats();
   const { wrongQuestions } = useWrongQuestions();
+
+  const consecutiveDays = getConsecutiveDays(results.map((r) => r.date));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerDate, setPickerDate] = useState(() =>
     examDate ? new Date(examDate) : new Date()
@@ -97,7 +118,7 @@ export default function AnasayfaScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Sınav tarihi: tıklanınca takvim açılır */}
+        {/* Sınav tarihi: Günün Sınavı'nın altında, tıklanınca takvim açılır */}
         <TouchableOpacity
           style={[styles.examDateRow, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}
           onPress={openDatePicker}
@@ -155,6 +176,28 @@ export default function AnasayfaScreen() {
                 <Text style={[styles.datePickerBtnTextPrimary, { color: c.primaryContrast }]}>Tamam</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        )}
+
+        {/* Başarı kartı: üst üste gün + toplam soru */}
+        {(consecutiveDays > 0 || totalQuestionsCompleted > 0) && (
+          <View style={[styles.achievementCard, { backgroundColor: c.card, borderColor: c.border }, getCardShadow(c)]}>
+            {consecutiveDays > 0 && (
+              <View style={styles.achievementRow}>
+                <Text style={styles.achievementEmoji}>🔥</Text>
+                <Text style={[styles.achievementText, { color: c.text }]}>
+                  {consecutiveDays} gün üst üste çözdün
+                </Text>
+              </View>
+            )}
+            {totalQuestionsCompleted > 0 && (
+              <View style={[styles.achievementRow, consecutiveDays > 0 && styles.achievementRowSecond]}>
+                <Text style={styles.achievementEmoji}>🎯</Text>
+                <Text style={[styles.achievementText, { color: c.text }]}>
+                  {totalQuestionsCompleted} soru tamamlandı
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
@@ -325,6 +368,20 @@ const styles = StyleSheet.create({
   dailyTextWrap: { flex: 1, minWidth: 0 },
   dailyTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
   dailySubtitle: { fontSize: 13, lineHeight: 18 },
+  achievementCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  achievementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  achievementRowSecond: { marginTop: Spacing.sm },
+  achievementEmoji: { fontSize: 20 },
+  achievementText: { fontSize: 15, fontWeight: '600', flex: 1 },
   twinRow: {
     flexDirection: 'row',
     gap: Spacing.md,

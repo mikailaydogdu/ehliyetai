@@ -64,18 +64,22 @@ export default function YanlisSorularCategoryScreen() {
   const handleSelectOption = (optionIndex: number) => {
     if (selectedIndex !== null) return;
     setSelectedIndex(optionIndex);
-    if (optionIndex === q.correctIndex) {
-      removeWrongQuestion(q.questionId);
-    }
   };
 
   const handleNext = () => {
-    setSelectedIndex(null);
-    if (currentIndex >= questionsToReview.length - 1) {
-      setCurrentIndex(0);
-      return;
+    const wasCorrect = q && selectedIndex === q.correctIndex;
+    if (wasCorrect) {
+      removeWrongQuestion(q.questionId);
+      setSelectedIndex(null);
+      // Liste güncellenince aynı index bir sonraki soruyu gösterir; index değiştirme
+    } else {
+      setSelectedIndex(null);
+      if (currentIndex >= questionsToReview.length - 1) {
+        setCurrentIndex(0);
+      } else {
+        setCurrentIndex((i) => i + 1);
+      }
     }
-    setCurrentIndex((i) => i + 1);
   };
 
   if (questionsToReview.length === 0) {
@@ -217,13 +221,6 @@ export default function YanlisSorularCategoryScreen() {
             })}
           </View>
         </View>
-
-        {hasAnswered && correct && (
-          <View style={[styles.feedback, { backgroundColor: c.success + '18', borderColor: c.success }, getCardShadow(c)]}>
-            <MaterialIcons name="check-circle" size={24} color={c.success} />
-            <Text style={[styles.feedbackText, { color: c.text }]}>Doğru!</Text>
-          </View>
-        )}
 
         {hasAnswered && (
           <TouchableOpacity
@@ -469,16 +466,6 @@ const styles = StyleSheet.create({
   optionLabel: { fontSize: 15, fontWeight: '600' },
   optionImage: { width: 80, height: 60 },
   optionText: { fontSize: 15, flex: 1 },
-  feedback: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-  },
-  feedbackText: { fontSize: 16, fontWeight: '600' },
   nextBtn: { paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
   nextBtnText: { fontSize: 17, fontWeight: '600' },
 });
